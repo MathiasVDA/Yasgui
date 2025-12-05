@@ -8,8 +8,7 @@ import { default as Yasqe, Config, PlainRequestConfig } from "./";
 import * as queryString from "query-string";
 //need to pass Yasqe object as argument, as the imported version might not have inherited all (e.g. `fold`) props of Codemirror yet
 export default function get() {
-  const prefixCcApi =
-    (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") + "prefix.cc/popular/all.file.json";
+  const prefixCcApi = "https://prefix.cc/popular/all.file.json";
   const CodeMirror = require("codemirror");
   const config: Omit<Config, "requestConfig"> = {
     mode: "sparql11",
@@ -52,7 +51,7 @@ SELECT * WHERE {
             .replaceRange(
               "",
               { ch: yasqe.getDoc().getLine(lineNumber - 1).length, line: lineNumber - 1 },
-              { ch: yasqe.getDoc().getLine(lineNumber).length, line: lineNumber }
+              { ch: yasqe.getDoc().getLine(lineNumber).length, line: lineNumber },
             );
         } else {
           //delete current line including the linebreak after
