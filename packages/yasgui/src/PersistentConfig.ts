@@ -8,6 +8,8 @@ export interface PersistedJson {
   active: string | undefined;
   tabConfig: { [tabId: string]: Tab.PersistedJson };
   lastClosedTab: { index: number; tab: Tab.PersistedJson } | undefined;
+  prefixes?: string;
+  autoCaptureEnabled?: boolean;
 }
 function getDefaults(): PersistedJson {
   return {
@@ -16,6 +18,8 @@ function getDefaults(): PersistedJson {
     active: undefined,
     tabConfig: {},
     lastClosedTab: undefined,
+    prefixes: "",
+    autoCaptureEnabled: true,
   };
 }
 
@@ -92,7 +96,7 @@ export default class PersistentConfig {
       this.storageId,
       this.persistedJson,
       this.yasgui.config.persistencyExpire,
-      this.handleLocalStorageQuotaFull
+      this.handleLocalStorageQuotaFull,
     );
   }
   private fromStorage(): PersistedJson {
@@ -133,6 +137,20 @@ export default class PersistentConfig {
   }
   public currentId() {
     return this.persistedJson.active;
+  }
+  public getPrefixes(): string {
+    return this.persistedJson.prefixes || "";
+  }
+  public setPrefixes(prefixes: string) {
+    this.persistedJson.prefixes = prefixes;
+    this.toStorage();
+  }
+  public getAutoCaptureEnabled(): boolean {
+    return this.persistedJson.autoCaptureEnabled !== false;
+  }
+  public setAutoCaptureEnabled(enabled: boolean) {
+    this.persistedJson.autoCaptureEnabled = enabled;
+    this.toStorage();
   }
   public static clear() {
     const storage = new YStorage(storageNamespace);

@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { addClass, removeClass, getAsValue } from "@zazuko/yasgui-utils";
 import { TabListEl } from "./TabElements";
-import TabPanel from "./TabPanel";
+import TabSettingsModal from "./TabSettingsModal";
 import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@zazuko/yasqe";
 import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@zazuko/yasr";
 import { mapValues, eq, mergeWith, words, deburr, invert } from "lodash-es";
@@ -57,7 +57,7 @@ export class Tab extends EventEmitter {
   private yasqeWrapperEl: HTMLDivElement | undefined;
   private yasrWrapperEl: HTMLDivElement | undefined;
   private endpointSelect: EndpointSelect | undefined;
-  private tabPanel?: TabPanel;
+  private settingsModal?: TabSettingsModal;
   constructor(yasgui: Yasgui, conf: PersistedJson) {
     super();
     if (!conf || conf.id === undefined) throw new Error("Expected a valid configuration to initialize tab with");
@@ -233,9 +233,8 @@ export class Tab extends EventEmitter {
     return this.yasr;
   }
   private initTabSettingsMenu() {
-    if (!this.rootEl || !this.controlBarEl)
-      throw new Error("Need to initialize wrapper elements before drawing tab pabel");
-    this.tabPanel = new TabPanel(this, this.rootEl, this.controlBarEl);
+    if (!this.controlBarEl) throw new Error("Need to initialize wrapper elements before drawing tab settings");
+    this.settingsModal = new TabSettingsModal(this, this.controlBarEl);
   }
 
   private initEndpointSelectField() {
@@ -437,6 +436,8 @@ export class Tab extends EventEmitter {
   }
   handleYasqeBlur = (yasqe: Yasqe) => {
     this.persistentJson.yasqe.value = yasqe.getValue();
+    // Capture prefixes from query if auto-capture is enabled
+    this.settingsModal?.capturePrefixesFromQuery();
     this.emit("change", this, this.persistentJson);
   };
   handleYasqeQuery = (yasqe: Yasqe) => {
@@ -541,7 +542,7 @@ export class Tab extends EventEmitter {
   }
   destroy() {
     this.removeAllListeners();
-    this.tabPanel?.destroy();
+    this.settingsModal?.destroy();
     this.endpointSelect?.destroy();
     this.endpointSelect = undefined;
     this.yasr?.destroy();
