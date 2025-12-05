@@ -21,7 +21,7 @@ const plugins: any[] = [
 const defaultEndpoint = "https://dbpedia.org/sparql";
 const corsProxy = "";
 function getAliasFor(packageName: "yasgui" | "yasr" | "yasqe" | "utils") {
-  const fullPackageName = packageName === "utils" ? "@zazuko/yasgui-utils" : `@zazuko/${packageName}`;
+  const fullPackageName = packageName === "utils" ? "@matdata/yasgui-utils" : `@matdata/${packageName}`;
   const packagePath = path.resolve(__dirname, "../packages", packageName, "src");
   return {
     [`${fullPackageName}$`]: path.resolve(packagePath, "index.ts"),
@@ -100,7 +100,7 @@ if (isDev) {
         const name = `${pathData.chunk?.name}`.toLocaleLowerCase();
         return `${name}.min.css`;
       },
-    })
+    }),
   );
 }
 if (analyzeBundle) plugins.push(new BundleAnalyzerPlugin());
@@ -113,7 +113,7 @@ plugins.push(
     options: {
       concurrency: 100,
     },
-  })
+  }),
 );
 
 export const genericConfig: webpack.Configuration = {

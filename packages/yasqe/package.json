@@ -1,12 +1,12 @@
 {
-  "name": "@zazuko/yasqe",
+  "name": "@matdata/yasqe",
   "description": "Yet Another SPARQL Query Editor",
   "version": "4.6.1",
   "main": "build/yasqe.min.js",
   "types": "build/ts/src/index.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
-  "homepage": "https://github.com/zazuko/Yasgui",
+  "homepage": "https://github.com/Matdata-eu/Yasgui",
   "engines": {
     "node": ">= 8"
   },
@@ -17,14 +17,14 @@
     "Semantic Web",
     "Linked Data"
   ],
-  "bugs": "https://github.com/zazuko/Yasgui/issues/",
+  "bugs": "https://github.com/Matdata-eu/Yasgui/issues/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zazuko/Yasgui.git",
+    "url": "https://github.com/Matdata-eu/Yasgui.git",
     "directory": "packages/yasqe"
   },
   "dependencies": {
-    "@zazuko/yasgui-utils": "^4.6.1",
+    "@matdata/yasgui-utils": "^4.6.1",
     "codemirror": "^5.51.0",
     "lodash-es": "^4.17.15",
     "query-string": "^6.10.1"

@@ -14,10 +14,10 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@zazuko/yasgui": ["./packages/yasgui/src"],
-      "@zazuko/yasgui-utils": ["./packages/utils/src"],
-      "@zazuko/yasqe": ["./packages/yasqe/src"],
-      "@zazuko/yasr": ["./packages/yasr/src"]
+      "@matdata/yasgui": ["./packages/yasgui/src"],
+      "@matdata/yasgui-utils": ["./packages/utils/src"],
+      "@matdata/yasqe": ["./packages/yasqe/src"],
+      "@matdata/yasr": ["./packages/yasr/src"]
     }
   },
   "files": ["./packages/yasgui/typings-custom/main.d.ts"],

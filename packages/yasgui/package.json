@@ -1,12 +1,12 @@
 {
-  "name": "@zazuko/yasgui",
+  "name": "@matdata/yasgui",
   "description": "Yet Another SPARQL GUI",
   "version": "4.6.1",
   "main": "build/yasgui.min.js",
   "types": "build/ts/src/index.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
-  "homepage": "https://github.com/zazuko/Yasgui",
+  "homepage": "https://github.com/Matdata-eu/Yasgui",
   "keywords": [
     "JavaScript",
     "SPARQL",
@@ -14,17 +14,17 @@
     "Semantic Web",
     "Linked Data"
   ],
-  "bugs": "https://github.com/zazuko/Yasgui/issues/",
+  "bugs": "https://github.com/Matdata-eu/Yasgui/issues/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zazuko/Yasgui.git",
+    "url": "https://github.com/Matdata-eu/Yasgui.git",
     "directory": "packages/yasgui"
   },
   "dependencies": {
     "@tarekraafat/autocomplete.js": "^7.2.0",
-    "@zazuko/yasgui-utils": "^4.6.1",
-    "@zazuko/yasqe": "^4.6.1",
-    "@zazuko/yasr": "^4.6.1",
+    "@matdata/yasgui-utils": "^4.6.1",
+    "@matdata/yasqe": "^4.6.1",
+    "@matdata/yasr": "^4.6.1",
     "autosuggest-highlight": "^3.1.1",
     "blueimp-md5": "^2.12.0",
     "choices.js": "^9.0.1",

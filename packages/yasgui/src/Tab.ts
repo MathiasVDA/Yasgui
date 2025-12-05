@@ -1,9 +1,9 @@
 import { EventEmitter } from "events";
-import { addClass, removeClass, getAsValue } from "@zazuko/yasgui-utils";
+import { addClass, removeClass, getAsValue } from "@matdata/yasgui-utils";
 import { TabListEl } from "./TabElements";
 import TabSettingsModal from "./TabSettingsModal";
-import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@zazuko/yasqe";
-import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@zazuko/yasr";
+import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@matdata/yasqe";
+import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@matdata/yasr";
 import { mapValues, eq, mergeWith, words, deburr, invert } from "lodash-es";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";

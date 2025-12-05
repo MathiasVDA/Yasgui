@@ -1,7 +1,7 @@
 import Autocomplete from "@tarekraafat/autocomplete.js";
 import { EventEmitter } from "events";
 import { pick } from "lodash-es";
-import { addClass } from "@zazuko/yasgui-utils";
+import { addClass } from "@matdata/yasgui-utils";
 require("./endpointSelect.scss");
 import parse from "autosuggest-highlight/parse";
 import DOMPurify from "dompurify";
@@ -151,7 +151,7 @@ export class EndpointSelect extends EventEmitter {
             // Match is highlighted text
             resultsContainer.innerHTML = parse(endpoint, createHighlights(endpoint, this.inputField.value)).reduce(
               (current, object) => (object.highlight ? current + object.text.bold() : current + object.text),
-              ""
+              "",
             );
             source.append(resultsContainer);
 
@@ -164,7 +164,7 @@ export class EndpointSelect extends EventEmitter {
               this.emit(
                 "remove",
                 this.value,
-                this.history.map((value) => value.endpoint)
+                this.history.map((value) => value.endpoint),
               );
               source.remove();
               event.stopPropagation();
@@ -192,7 +192,7 @@ export class EndpointSelect extends EventEmitter {
         this.emit(
           "select",
           this.value,
-          this.history.map((value) => value.endpoint)
+          this.history.map((value) => value.endpoint),
         );
       },
       noResults: () => {
@@ -232,7 +232,7 @@ export class EndpointSelect extends EventEmitter {
           this.emit(
             "select",
             this.value,
-            this.history.map((h) => h.endpoint)
+            this.history.map((h) => h.endpoint),
           );
           this.inputField.blur();
           return;
@@ -242,7 +242,7 @@ export class EndpointSelect extends EventEmitter {
         this.emit(
           "select",
           this.value,
-          this.history.map((value) => value.endpoint)
+          this.history.map((value) => value.endpoint),
         );
         this.clearListSuggestionList();
         this.inputField.blur();
@@ -258,7 +258,7 @@ export class EndpointSelect extends EventEmitter {
       if (event.keyCode === 38 || event.keyCode === 40) {
         event.stopPropagation();
         const selected: HTMLLIElement | null = this.container.querySelector(
-          ".autocompleteList .autoComplete_result.autoComplete_selected"
+          ".autocompleteList .autoComplete_result.autoComplete_selected",
         );
         if (selected && !listElementIsFullyVissible(selected)) {
           selected.scrollIntoView(false);

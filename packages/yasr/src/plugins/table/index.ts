@@ -10,7 +10,7 @@ import Parser from "../../parsers";
 import { escape } from "lodash-es";
 import { Plugin, DownloadInfo } from "../";
 import Yasr from "../../";
-import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@zazuko/yasgui-utils";
+import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@matdata/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 import { DeepReadonly } from "ts-essentials";
 import { cloneDeep } from "lodash-es";
@@ -127,7 +127,7 @@ export default class Table implements Plugin<PluginConfig> {
     const uri = `${hideBrackets ? "" : "&lt;"}<a class='iri' target='${
       this.config.openIriInNewWindow ? "_blank" : "_self"
     }'${this.config.openIriInNewWindow ? " ref='noopener noreferrer'" : ""} href='${href}'>${sanitize(
-      visibleString
+      visibleString,
     )}</a>${hideBrackets ? "" : "&gt;"}`;
     return sanitize(uri);
   }

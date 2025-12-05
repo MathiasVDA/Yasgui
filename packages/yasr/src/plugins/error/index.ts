@@ -3,7 +3,7 @@
  */
 import { Plugin } from "../";
 import Yasr from "../../";
-import { addClass } from "@zazuko/yasgui-utils";
+import { addClass } from "@matdata/yasgui-utils";
 require("./index.scss");
 
 export default class Error implements Plugin<never> {

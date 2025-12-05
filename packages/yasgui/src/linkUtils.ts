@@ -1,9 +1,9 @@
 const JsUri = require("jsuri");
 
 import { default as Tab, PersistedJson } from "./Tab";
-import Yasr from "@zazuko/yasr";
-import { PlainRequestConfig } from "@zazuko/yasqe";
-import { getAsValue } from "@zazuko/yasgui-utils";
+import Yasr from "@matdata/yasr";
+import { PlainRequestConfig } from "@matdata/yasqe";
+import { getAsValue } from "@matdata/yasgui-utils";
 var getUrlParams = function (_url?: string) {
   var urlFromWindow = false;
   if (!_url) {
@@ -165,7 +165,7 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
 
 export function queryCatalogConfigToTabConfig<Q extends QueryCatalogConfig>(
   catalogConfig: Q,
-  defaults?: PersistedJson
+  defaults?: PersistedJson,
 ): PersistedJson {
   const options = defaults || Tab.getDefaults();
   if (catalogConfig.service) {

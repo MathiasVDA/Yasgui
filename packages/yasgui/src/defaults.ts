@@ -1,6 +1,6 @@
 import { Config } from "./";
-import Yasr from "@zazuko/yasr";
-import { default as Yasqe } from "@zazuko/yasqe";
+import Yasr from "@matdata/yasr";
+import { default as Yasqe } from "@matdata/yasqe";
 import { CatalogueItem } from "./endpointSelect";
 
 export default function initialize(): Config<CatalogueItem> {
@@ -49,7 +49,7 @@ export default function initialize(): Config<CatalogueItem> {
         endpointSpan.innerHTML =
           data.matches.endpoint?.reduce(
             (current, object) => (object.highlight ? current + object.text.bold() : current + object.text),
-            ""
+            "",
           ) || "";
         contentDiv.appendChild(endpointSpan);
         source.appendChild(contentDiv);

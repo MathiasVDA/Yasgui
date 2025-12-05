@@ -1,4 +1,4 @@
-import { addClass, removeClass, drawSvgStringAsElement } from "@zazuko/yasgui-utils";
+import { addClass, removeClass, drawSvgStringAsElement } from "@matdata/yasgui-utils";
 import "./TabSettingsModal.scss";
 import Tab from "./Tab";
 

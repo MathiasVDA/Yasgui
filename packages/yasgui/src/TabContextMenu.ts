@@ -1,4 +1,4 @@
-import { addClass } from "@zazuko/yasgui-utils";
+import { addClass } from "@matdata/yasgui-utils";
 import { default as Yasgui, getRandomId } from "./";
 import Tab from "./Tab";
 import { TabListEl } from "./TabElements";

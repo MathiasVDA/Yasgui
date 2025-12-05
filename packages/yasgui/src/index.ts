@@ -7,12 +7,12 @@ import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
 import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
-import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@zazuko/yasqe";
-import { default as Yasr, Config as YasrConfig } from "@zazuko/yasr";
-import { addClass, removeClass } from "@zazuko/yasgui-utils";
+import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@matdata/yasqe";
+import { default as Yasr, Config as YasrConfig } from "@matdata/yasr";
+import { addClass, removeClass } from "@matdata/yasgui-utils";
 import GeoPlugin from "yasgui-geo-tg";
 require("./index.scss");
-require("@zazuko/yasr/src/scss/global.scss");
+require("@matdata/yasr/src/scss/global.scss");
 
 // Register the GeoPlugin to Yasr
 Yasr.registerPlugin("geo", GeoPlugin);

@@ -75,13 +75,13 @@ If you only want to install Yasr or Yasqe, replace yasgui in the commands below.
 ### npm
 
 ```sh
-npm i @zazuko/yasgui
+npm i @matdata/yasgui
 ```
 
 ### Yarn
 
 ```sh
-yarn add @zazuko/yasgui
+yarn add @matdata/yasgui
 ```
 
 ## Local Development
