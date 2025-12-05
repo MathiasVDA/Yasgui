@@ -420,6 +420,9 @@ export class Tab extends EventEmitter {
     this.yasqe.on("autocompletionClose", this.handleAutocompletionClose);
 
     this.yasqe.on("queryResponse", this.handleQueryResponse);
+
+    // Add Ctrl+Click handler for URIs
+    this.attachYasqeMouseHandler();
   }
   private destroyYasqe() {
     // As Yasqe extends of CM instead of eventEmitter, it doesn't expose the removeAllListeners function, so we should unregister all events manually
@@ -431,6 +434,7 @@ export class Tab extends EventEmitter {
     this.yasqe?.off("autocompletionClose", this.handleAutocompletionClose);
     this.yasqe?.off("queryBefore", this.handleYasqeQueryBefore);
     this.yasqe?.off("queryResponse", this.handleQueryResponse);
+    this.detachYasqeMouseHandler();
     this.yasqe?.destroy();
     this.yasqe = undefined;
   }
@@ -487,6 +491,170 @@ export class Tab extends EventEmitter {
     }
     this.emit("change", this, this.persistentJson);
   };
+
+  private handleYasqeMouseDown = (event: MouseEvent) => {
+    // Only handle Ctrl+Click
+    if (!event.ctrlKey || !this.yasqe) return;
+
+    const target = event.target as HTMLElement;
+    // Check if click is within CodeMirror editor
+    if (!target.closest(".CodeMirror")) return;
+
+    // Get position from mouse coordinates
+    const pos = this.yasqe.coordsChar({ left: event.clientX, top: event.clientY });
+    const token = this.yasqe.getTokenAt(pos);
+
+    // Check if token is a URI (not a variable)
+    // URIs typically have token.type of 'string-2' or might be in angle brackets
+    const tokenString = token.string.trim();
+
+    // Skip if it's a variable (starts with ? or $)
+    if (tokenString.startsWith("?") || tokenString.startsWith("$")) return;
+
+    // Check if it's a URI - either in angle brackets or a prefixed name
+    const isFullUri = tokenString.startsWith("<") && tokenString.endsWith(">");
+    const isPrefixedName = /^[\w-]+:[\w-]+/.test(tokenString);
+
+    if (!isFullUri && !isPrefixedName) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Extract the URI
+    let uri = tokenString;
+    if (isFullUri) {
+      // Remove angle brackets
+      uri = tokenString.slice(1, -1);
+    } else if (isPrefixedName) {
+      // Expand prefixed name to full URI
+      const prefixes = this.yasqe.getPrefixesFromQuery();
+      const [prefix, localName] = tokenString.split(":");
+      const prefixUri = prefixes[prefix];
+      if (prefixUri) {
+        uri = prefixUri + localName;
+      }
+    }
+
+    // Construct the query
+    const constructQuery = `CONSTRUCT {   
+  ?s_left ?p_left ?target .
+  ?target ?p_right ?o_right .
+}
+WHERE {
+  BIND(<${uri}> as ?target)
+  {
+    ?s_left ?p_left ?target .
+  }
+  UNION
+  {
+    ?target ?p_right ?o_right .
+  }  
+} LIMIT 1000`;
+
+    // Execute query in background without changing editor content
+    this.executeBackgroundQuery(constructQuery);
+  };
+
+  private async executeBackgroundQuery(query: string) {
+    if (!this.yasqe || !this.yasr) return;
+
+    try {
+      // Show loading indicator
+      this.yasr.showLoading();
+      this.emit("queryBefore", this);
+
+      // Get the request configuration
+      const requestConfig = this.yasqe.config.requestConfig;
+      const config = typeof requestConfig === "function" ? requestConfig(this.yasqe) : requestConfig;
+
+      if (!config.endpoint) {
+        throw new Error("No endpoint configured");
+      }
+
+      const endpoint = typeof config.endpoint === "function" ? config.endpoint(this.yasqe) : config.endpoint;
+      const method = typeof config.method === "function" ? config.method(this.yasqe) : config.method || "POST";
+      const headers = typeof config.headers === "function" ? config.headers(this.yasqe) : config.headers || {};
+
+      // Prepare request
+      const searchParams = new URLSearchParams();
+      searchParams.append("query", query);
+
+      // Add any additional args
+      if (config.args && Array.isArray(config.args)) {
+        config.args.forEach((arg: any) => {
+          if (arg.name && arg.value) {
+            searchParams.append(arg.name, arg.value);
+          }
+        });
+      }
+
+      const fetchOptions: RequestInit = {
+        method: method,
+        headers: {
+          Accept: "text/turtle",
+          ...headers,
+        },
+      };
+
+      let url = endpoint;
+      if (method === "POST") {
+        fetchOptions.headers = {
+          ...fetchOptions.headers,
+          "Content-Type": "application/x-www-form-urlencoded",
+        };
+        fetchOptions.body = searchParams.toString();
+      } else {
+        const urlObj = new URL(endpoint);
+        searchParams.forEach((value, key) => {
+          urlObj.searchParams.append(key, value);
+        });
+        url = urlObj.toString();
+      }
+
+      const startTime = Date.now();
+      const response = await fetch(url, fetchOptions);
+      const duration = Date.now() - startTime;
+
+      if (!response.ok) {
+        throw new Error(`Query failed: ${response.statusText}`);
+      }
+
+      const result = await response.text();
+
+      // Set the response in Yasr
+      this.yasr.setResponse(result, duration);
+      this.yasr.hideLoading();
+      this.emit("queryResponse", this);
+    } catch (error) {
+      console.error("Background query failed:", error);
+      if (this.yasr) {
+        this.yasr.hideLoading();
+        // Set error response
+        this.yasr.setResponse(
+          {
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+          0,
+        );
+      }
+    }
+  }
+
+  private attachYasqeMouseHandler() {
+    if (!this.yasqe) return;
+    const wrapper = this.yasqe.getWrapperElement();
+    if (wrapper) {
+      wrapper.addEventListener("mousedown", this.handleYasqeMouseDown);
+    }
+  }
+
+  private detachYasqeMouseHandler() {
+    if (!this.yasqe) return;
+    const wrapper = this.yasqe.getWrapperElement();
+    if (wrapper) {
+      wrapper.removeEventListener("mousedown", this.handleYasqeMouseDown);
+    }
+  }
 
   private initYasr() {
     if (!this.yasrWrapperEl) throw new Error("Wrapper for yasr does not exist");
