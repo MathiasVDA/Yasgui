@@ -621,8 +621,26 @@ WHERE {
 
       const result = await response.text();
 
+      // Create a query response object similar to what Yasqe produces
+      // This includes headers so the Parser can detect the content type
+      const queryResponse = {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        type: response.type,
+        content: result,
+      };
+
       // Set the response in Yasr
-      this.yasr.setResponse(result, duration);
+      this.yasr.setResponse(queryResponse, duration);
+
+      // Auto-select the Graph plugin if it's available
+      // The selectPlugin method will call draw() which will determine if it can handle the results
+      if (this.yasr.plugins["Graph"]) {
+        this.yasr.selectPlugin("Graph");
+      }
+
       this.yasr.hideLoading();
       this.emit("queryResponse", this);
     } catch (error) {
