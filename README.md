@@ -1,6 +1,8 @@
 # YASGUI
 
-This is a fork 
+YASGUI (Yet Another SPARQL GUI) is an advanced SPARQL client for querying and exploring RDF data. It provides a user-friendly interface for writing SPARQL queries, executing them against SPARQL endpoints, and visualizing the results in various formats.
+
+Go to https://yasgui.matdata.eu/ and use it freely in production. Or fork this repo and extend it yourself. Contributions are certainly welcome!
 
 ## Table of Contents
 
@@ -20,9 +22,10 @@ This is a fork
 
 ## Useful Links
 
+- Production environment: https://yasgui.matdata.eu/
+- Dev environment: https://yasgui-dev.matdata.eu/
 - User documentation: https://docs.triply.cc/yasgui/
 - Developer documentation: https://docs.triply.cc/yasgui-api/
-- Documentation Github repository (feel free to add a PR for improvements): https://github.com/TriplyDB/Documentation
 
 ## Features
 
@@ -62,7 +65,8 @@ Yasgui includes several built-in plugins to visualize SPARQL query results:
 - **Table**: Interactive table view with sorting, filtering, pagination, and column resizing. Ideal for SELECT query results.
 - **Boolean**: Displays boolean results (true/false) with visual indicators. Automatically used for ASK queries.
 - **Response**: Raw response viewer with syntax highlighting and code folding. Shows the original response from the endpoint in JSON, XML, Turtle, or other formats.
-- **Geo**: Geographic visualization plugin for displaying spatial data on interactive maps. Visualizes geospatial triples with coordinates.
+- **Geo**: Geographic visualization plugin for displaying spatial data on interactive maps. Visualizes geospatial triples with coordinates. See [Yasgui Geo TG Plugin](https://github.com/Thib-G/yasgui-geo-tg) for more details.
+- **Graph**: Visual graph representation of RDF data using nodes and edges. Ideal for CONSTRUCT/DESCRIBE query results. See [Yasgui Graph Plugin](https://github.com/Matdata-eu/yasgui-graph-plugin) for more details.
 - **Error**: Displays error messages and diagnostics when queries fail, including CORS troubleshooting guidance.
 
 Plugins are automatically selected based on the query type and response format. You can manually switch between available plugins using the view selector in the results pane.
@@ -102,6 +106,6 @@ Run `npm run build`. It'll store the transpiled js/css files in the `build` dire
 
 ## License
 
-This is a fork from Zazuko from software written by Triply.
+This is a fork from [Zazuko](https://github.com/zazuko/Yasgui) who forked it from [Triply](https://github.com/TriplyDB/Yasgui).
 
 This code is released under the MIT license.
