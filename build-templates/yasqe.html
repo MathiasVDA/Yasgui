@@ -9,18 +9,105 @@
   <div id="yasqe"></div>
   
   <script src="/yasqe.min.js"></script>
-  <script>
-    try {
-      window.yasqe = new Yasqe(document.getElementById("yasqe"), {
-        requestConfig: {
-          endpoint: "https://dbpedia.org/sparql",
-        }
-      });
-      console.log("Yasqe initialized successfully");
-    } catch (e) {
-      console.error("Failed to initialize Yasqe:", e);
-      throw e;
-    }
-  </script>
+    <script>
+      var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+      if (isIE11) {
+        var polyfills = document.createElement("script");
+        polyfills.setAttribute("src", "//yasgui.triply.cc/yasgui.polyfill.min.js");
+        document.head.appendChild(polyfills);
+      }
+      window.onpageshow = function() {
+				const noExternalServices = document.location.search.indexOf("noExternalServices") >= 0;
+        if (noExternalServices) {
+					var warningEl = document.getElementById('noExternalServicesWarning');
+					if (warningEl) warningEl.style.display = 'block';
+          //avoid references to external services such as lov and prefix.cc
+          //Useful for unit-testing purposes
+          
+          // Enable the default autocompleters first
+          Yasqe.defaults.autocompleters = ["variables", "prefixes", "property", "class"];
+          
+          Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("prefixes"), 1);
+          Yasqe.forkAutocompleter("prefixes", {
+            name: "prefixes-local",
+            persistenceId: null,
+            get: () => {
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(
+                    [
+                      "foaf: <http://xmlns.com/foaf/0.1/>",
+                      "geo: <http://www.opengis.net/ont/geosparql#>",
+                      "rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+                      "rdfa: <http://www.w3.org/ns/rdfa#>",
+                      "rdfdata: <http://rdf.data-vocabulary.org/rdf.xml#>",
+                      "rdfdf: <http://www.openlinksw.com/virtrdf-data-formats#>",
+                      "rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/>",
+                      "rdfp: <https://w3id.org/rdfp/>",
+                      "rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                      "testa: <https://test.a.com/>",
+                      "testb: <https://test.b.com/>",
+                      "testc: <https://test.c.com/>"
+                    ],
+                    20
+                  );
+                });
+              });
+            }
+          });
+          Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("property"), 1);
+          const propCompletions = [
+            "http://www.opengis.net/ont/geosparql#defaultGeometry",
+            "http://www.opengis.net/ont/geosparql#asWKT",
+            "http://www.opengis.net/ont/geosparql#asGML"
+          ];
+          for (let i = 0; i < 1000; i++) {
+            propCompletions.push("https://test.a.com/" + i);
+          }
+
+          Yasqe.forkAutocompleter("property", {
+            name: "property-local",
+            get: function(yasqe, token) {
+              console.log(
+                propCompletions,
+                propCompletions.filter(iri => token.autocompletionString.indexOf(iri) === 0)
+              );
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(propCompletions.filter(iri => iri.indexOf(token.autocompletionString) === 0));
+                });
+              });
+            }
+          });
+          const classCompletions = [];
+          for (let i = 0; i < 1000; i++) {
+            classCompletions.push("https://test.b.com/" + i);
+          }
+
+          Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("class"), 1);
+          Yasqe.forkAutocompleter("class", {
+            name: "class-local",
+            get: function(yasqe, token) {
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(classCompletions.filter(iri => iri.indexOf(token.autocompletionString) === 0));
+                });
+              });
+            }
+          });
+        } else {
+					var toggleEl = document.getElementById('noExternalServicesToggle');
+					if (toggleEl) toggleEl.style.display = 'block';
+				}
+
+        window.yasqe = new Yasqe(document.getElementById("yasqe"));
+        window.yasqe.on("queryResponse", function() {
+          console.log("response event", arguments);
+        });
+        window.yasqe.on("query", function() {
+          console.log("query event", arguments);
+        });
+      };
+    </script>
 </body>
 </html>
