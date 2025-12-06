@@ -8,11 +8,11 @@ const TEST_ON_DEV_BUILD = !!process.env["TEST_ON_DEV_BUILD"];
 const PORT = TEST_ON_DEV_BUILD ? 4000 : 40001;
 export async function setupServer(buildDir: string): Promise<http.Server | undefined> {
   // to serve the logo for the tests
-  const dir = `${buildDir}/webpack`;
+  const dir = `${buildDir}/`;
   if (!fs.existsSync(dir)) {
     await fs.mkdir(dir, { recursive: true });
   }
-  await fs.copy("./webpack/yasgui.png", `${dir}/yasgui.png`);
+  await fs.copy("./dev/yasgui.png", `${dir}/yasgui.png`);
 
   if (TEST_ON_DEV_BUILD) return Promise.resolve(undefined);
   let staticFileServer = new NodeStatic.Server(buildDir);

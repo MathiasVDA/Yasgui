@@ -36,8 +36,6 @@ function copyDir(src, dest) {
 
 // Copy static assets
 copyDir("packages/yasgui/static", "build/packages/yasgui/static");
-fs.mkdirSync("build/webpack", { recursive: true });
-fs.copyFileSync("webpack/yasgui.png", "build/webpack/yasgui.png");
 
 const commonConfig = {
   bundle: true,

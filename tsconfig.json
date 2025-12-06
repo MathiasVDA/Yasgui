@@ -21,7 +21,7 @@
     }
   },
   "files": ["./packages/yasgui/typings-custom/main.d.ts"],
-  "include": ["./packages/*/src/**/**/*", "./webpack/**/*", "./test/*", "./packages/yasqe/grammar/tokenizer.ts"],
+  "include": ["./packages/*/src/**/**/*", "./test/*", "./packages/yasqe/grammar/tokenizer.ts"],
   "compileOnSave": false,
   "exclude": ["**/build/**"]
 }

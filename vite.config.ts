@@ -3,7 +3,7 @@ import { resolve } from "path";
 
 export default defineConfig({
   root: "dev",
-  publicDir: resolve(__dirname, "webpack"),
+  publicDir: resolve(__dirname, "dev"),
   server: {
     host: "0.0.0.0",
     port: 4000,

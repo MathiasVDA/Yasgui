@@ -1,5 +1,6 @@
 {
   "name": "@matdata/yasgui-monorepo",
+  "type": "module",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -9,10 +10,8 @@
     "build": "better-npm-run build",
     "dev": "better-npm-run dev",
     "util:lint": "cross-env ESLINT_STRICT=true eslint --ext .tsx --ext .ts \"packages/*/src/**/*.{ts,tsx}\" \"packages/*/test/**/*.{ts,tsx}\" \"packages/*/grammar/**/*.{ts,tsx}\"",
-    "util:buildWebpackConfig": "tsc -p tsconfig-webpack.json",
     "util:validateTs": "tsc -p ./tsconfig-validate.json --noEmit",
     "util:prettify": "prettier --parser typescript --write \"packages/*/src/**/*.{ts,tsx}\" && prettier --parser css --write \"packages/*/src/**/*.{css,scss}\"",
-    "util:analyzeBundle": "cross-env ANALYZE_BUNDLE=true npm run build",
     "pretest": "node -e \"if (!require('fs').existsSync('./build') || require('fs').readdirSync('./build').length === 0) { console.log('Run \\\"npm run build\\\" before running a test'); process.exit(1); }\"",
     "test:dev": "cross-env TEST_ON_DEV_BUILD=1 npm run test",
     "test": "npm run puppeteer-test && npm run unit-test",
@@ -30,7 +29,7 @@
       }
     },
     "build": {
-      "command": "node esbuild.config.js && node webpack/distributeBuildFiles.js",
+      "command": "node esbuild.config.js && node distributeBuildFiles.js",
       "env": {
         "NODE_ENV": "production"
       }
@@ -56,31 +55,20 @@
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "autoprefixer": "^10.4.21",
-    "babel-loader": "^10.0.0",
     "better-npm-run": "^0.1.1",
     "chai": "^6.2.0",
-    "css-loader": "^7.1.2",
     "fs-extra": "^11.3.2",
-    "html-webpack-plugin": "^5.6.4",
-    "mini-css-extract-plugin": "^2.9.4",
     "mocha": "^11.7.4",
     "node-static": "^0.7.11",
     "yasgui-geo-tg": "^1.1.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.5",
-    "@babel/plugin-transform-runtime": "^7.23.4",
-    "@babel/preset-env": "^7.23.5",
-    "@babel/runtime": "^7.23.5",
     "@changesets/cli": "^2.29.7",
     "@types/chai": "^5.2.3",
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^10.0.10",
     "@types/node-static": "^0.7.12",
-    "@types/webpack-bundle-analyzer": "^4.7.0",
-    "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^7.0.3",
-    "css-minimizer-webpack-plugin": "^5.0.0",
     "esbuild": "^0.24.2",
     "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^8.55.0",
@@ -89,24 +77,14 @@
     "eslint-plugin-lodash": "^7.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "postcss-loader": "^8.2.0",
+    "postcss": "^8.4.49",
     "prettier": "^3.6.2",
     "puppeteer": "^24.28.0",
     "sass": "^1.93.3",
-    "sass-loader": "^16.0.6",
     "source-map": "^0.7.6",
-    "source-map-loader": "^5.0.0",
     "source-map-support": "^0.5.21",
-    "style-loader": "^1.1.3",
-    "terser-webpack-plugin": "^5.3.10",
-    "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
-    "vite": "^5.4.11",
-    "webpack": "^5.102.1",
-    "webpack-bundle-analyzer": "^4.10.2",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.2",
-    "webpack-livereload-plugin": "^3.0.2"
+    "vite": "^5.4.11"
   },
   "version": "4.7.0"
 }
