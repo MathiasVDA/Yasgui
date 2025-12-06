@@ -1,4 +1,4 @@
-require("source-map-support/register");
+import "source-map-support/register.js";
 import * as puppeteer from "puppeteer";
 
 import * as path from "path";
@@ -8,7 +8,7 @@ import { it, describe, before, beforeEach, after, afterEach } from "mocha";
 const expect = chai.expect;
 import Yasqe from "@matdata/yasqe";
 //@ts-ignore ignore unused warning
-import { setup, destroy, closePage, getPage, makeScreenshot, inspectLive, wait } from "./utils";
+import { setup, destroy, closePage, getPage, makeScreenshot, inspectLive, wait } from "./utils.js";
 
 declare var window: Window & {
   Yasqe: typeof Yasqe;
@@ -36,7 +36,8 @@ describe("Yasqe", function () {
     server = refs.server;
   });
 
-  beforeEach(async () => {
+  beforeEach(async function () {
+    this.timeout(30000);
     page = await getPage(browser, "yasqe.html");
     await page.evaluate(() => localStorage.clear());
   });

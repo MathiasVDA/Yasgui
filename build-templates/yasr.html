@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/yasr.min.css">
+  <title>Yasr</title>
+  <script src="/yasr.min.js"></script>
+</head>
+<body>
+  <div id="yasr"></div>
+  
+  <script>
+    window.yasr = new Yasr(document.getElementById("yasr"), {
+      prefixes: {
+        dbo: "http://dbpedia.org/ontology/",
+        dbp: "http://dbpedia.org/property/"
+      }
+    });
+  </script>
+</body>
+</html>

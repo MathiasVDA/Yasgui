@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/yasgui.min.css">
+  <title>Yasgui</title>
+  <script src="/yasgui.min.js"></script>
+</head>
+<body>
+  <div id="yasgui"></div>
+  
+  <script>
+    window.yasgui = new Yasgui(document.getElementById("yasgui"), {
+      requestConfig: { endpoint: "https://dbpedia.org/sparql" },
+      copyEndpointOnNewTab: false
+    });
+  </script>
+</body>
+</html>

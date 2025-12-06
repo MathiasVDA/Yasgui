@@ -2,7 +2,7 @@
   "extends": "./tsconfig-build.json",
   "compilerOptions": {
     "outDir": "./build/test",
-    "module": "commonjs",
+    "module": "ES2020",
     "esModuleInterop": true,
     "strict": false,
     "incremental": true,

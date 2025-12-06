@@ -37,6 +37,16 @@ function copyDir(src, dest) {
 // Copy static assets
 copyDir("packages/yasgui/static", "build/packages/yasgui/static");
 
+// Copy HTML files for testing (from build-templates, not dev)
+const htmlFiles = ["index.html", "yasgui.html", "yasqe.html", "yasr.html"];
+for (const file of htmlFiles) {
+  const src = path.join("build-templates", file);
+  const dest = path.join("build", file);
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, dest);
+  }
+}
+
 const commonConfig = {
   bundle: true,
   sourcemap: true,
@@ -74,6 +84,10 @@ async function buildPackage(name, entryPoint, globalName) {
     globalName: globalName,
     platform: "browser",
     metafile: true,
+    footer: {
+      // Unwrap default export for IIFE format to make constructor available as global
+      js: `if (typeof ${globalName} !== 'undefined' && ${globalName}?.default) { ${globalName} = ${globalName}.default; }`,
+    },
   });
 
   // Extract CSS if any was bundled

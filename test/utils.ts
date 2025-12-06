@@ -1,5 +1,5 @@
 import * as NodeStatic from "node-static";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import puppeteer, { Browser, Page } from "puppeteer";
 import * as http from "http";
 import * as Mocha from "mocha";
@@ -58,7 +58,10 @@ export async function destroy(browser: Browser, server?: http.Server) {
 }
 export async function getPage(browser: Browser, path: string) {
   const page = await browser.newPage();
-  await page.goto(`http://localhost:${PORT}/${path}?noExternalServices=true`);
+  await page.goto(`http://localhost:${PORT}/${path}?noExternalServices=true`, {
+    waitUntil: "networkidle2",
+    timeout: 30000,
+  });
 
   await Promise.race([
     new Promise((_resolve, reject) => {
@@ -69,7 +72,9 @@ export async function getPage(browser: Browser, path: string) {
         reject(err);
       });
     }),
-    page.waitForFunction(() => "yasgui" in window || "yasr" in window || "yasqe" in window || "stories" in window),
+    page.waitForFunction(() => "yasgui" in window || "yasr" in window || "yasqe" in window || "stories" in window, {
+      timeout: 30000,
+    }),
   ]);
   page.on("error", (e) => {
     console.error("Error on page: ", e);
@@ -79,9 +84,14 @@ export async function getPage(browser: Browser, path: string) {
 export function makeScreenshot(page: Page, name?: string) {
   return page.screenshot({ type: "png", path: `./test/screenshots/${name ?? Date.now()}.png` });
 }
-export async function closePage(suite: Mocha.Suite, page: Page) {
+export async function closePage(suite: Mocha.Suite, page: Page | undefined) {
+  if (!page) return;
   const state = suite.ctx.currentTest?.state || "unknown";
   const title = suite.ctx.currentTest?.fullTitle() || "unknown";
-  await makeScreenshot(page, `${state}-${_.kebabCase(title)}`);
-  if (page) await page.close();
+  try {
+    await makeScreenshot(page, `${state}-${_.kebabCase(title)}`);
+  } catch (e) {
+    console.error("Failed to take screenshot:", e);
+  }
+  await page.close();
 }

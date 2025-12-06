@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/yasqe.min.css">
+  <title>Yasqe</title>
+</head>
+<body>
+  <div id="yasqe"></div>
+  
+  <script src="/yasqe.min.js"></script>
+  <script>
+    try {
+      window.yasqe = new Yasqe(document.getElementById("yasqe"), {
+        requestConfig: {
+          endpoint: "https://dbpedia.org/sparql",
+        }
+      });
+      console.log("Yasqe initialized successfully");
+    } catch (e) {
+      console.error("Failed to initialize Yasqe:", e);
+      throw e;
+    }
+  </script>
+</body>
+</html>
