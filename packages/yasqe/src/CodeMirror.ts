@@ -50,5 +50,5 @@ interface CodeMirror extends Omit<CmEditor, "getOption" | "setOption" | "on" | "
 
   foldCode(firstPrefixLine: number, prefix: string, collapse: "fold" | "unfold"): void;
 }
-const CodeMirror: { new (): CodeMirror; signal: (target: any, name: string, ...args: any[]) => void } = _CodeMirror;
+const CodeMirror: any = _CodeMirror;
 export default CodeMirror;
