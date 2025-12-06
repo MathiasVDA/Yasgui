@@ -10,6 +10,8 @@ npm run dev
 
 This will start the Vite dev server on http://localhost:4000
 
+You can open a debug page in your IDE or in your browser.
+
 ## What Changed
 
 ### From Webpack to Vite + esbuild
