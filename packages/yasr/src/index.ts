@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { merge, filter, mapValues, uniqueId } from "lodash-es";
 import getDefaults from "./defaults";
-import { Plugin } from "./plugins";
+import type { Plugin } from "./plugins";
 import {
   Storage as YStorage,
   drawFontAwesomeIconAsSvg,
@@ -16,7 +16,7 @@ import { addScript, addCss, sanitize } from "./helpers";
 import * as faDownload from "@fortawesome/free-solid-svg-icons/faDownload";
 import * as faQuestionCircle from "@fortawesome/free-solid-svg-icons/faQuestionCircle";
 import * as imgs from "./imgs";
-require("./main.scss");
+import "./main.scss";
 
 export interface PersistentConfig {
   selectedPlugin?: string;
@@ -683,6 +683,6 @@ Yasr.registerPlugin("boolean", YasrPluginBoolean.default as any);
 Yasr.registerPlugin("response", YasrPluginResponse.default as any);
 Yasr.registerPlugin("error", YasrPluginError.default as any);
 
-export { Plugin, DownloadInfo } from "./plugins";
+export type { Plugin, DownloadInfo } from "./plugins";
 
 export default Yasr;

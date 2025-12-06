@@ -1,4 +1,4 @@
-var store = require("store");
+import store from "store";
 export interface ItemWrapper<V = {}> {
   exp: number;
   val: V;

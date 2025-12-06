@@ -2,7 +2,7 @@ import Autocomplete from "@tarekraafat/autocomplete.js";
 import { EventEmitter } from "events";
 import { pick } from "lodash-es";
 import { addClass } from "@matdata/yasgui-utils";
-require("./endpointSelect.scss");
+import "./endpointSelect.scss";
 import parse from "autosuggest-highlight/parse";
 import DOMPurify from "dompurify";
 

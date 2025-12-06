@@ -3,7 +3,7 @@ import { default as Yasgui, getRandomId } from "./";
 import Tab from "./Tab";
 import { TabListEl } from "./TabElements";
 import { cloneDeep } from "lodash-es";
-require("./TabContextMenu.scss");
+import "./TabContextMenu.scss";
 export interface TabContextConfig {
   name: string;
   action: (this: HTMLElement, ev: MouseEvent) => any;

@@ -1,4 +1,4 @@
-const JsUri = require("jsuri");
+import JsUri from "jsuri";
 
 import { default as Tab, PersistedJson } from "./Tab";
 import Yasr from "@matdata/yasr";

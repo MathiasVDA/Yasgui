@@ -7,7 +7,7 @@ import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as Yasr
 import { mapValues, eq, mergeWith, words, deburr, invert } from "lodash-es";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
-require("./tab.scss");
+import "./tab.scss";
 import { getRandomId, default as Yasgui, YasguiRequestConfig } from "./";
 export interface PersistedJsonYasr extends YasrPersistentConfig {
   responseSummary: Parser.ResponseSummary;

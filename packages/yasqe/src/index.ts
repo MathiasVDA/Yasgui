@@ -1,5 +1,5 @@
-require("./scss/yasqe.scss");
-require("./scss/buttons.scss");
+import "./scss/yasqe.scss";
+import "./scss/buttons.scss";
 import { findFirstPrefixLine } from "./prefixFold";
 import { getPrefixesFromQuery, addPrefixes, removePrefixes, Prefixes } from "./prefixUtils";
 import { getPreviousNonWsToken, getNextNonWsToken, getCompleteToken } from "./tokenUtils";

@@ -2,8 +2,8 @@ import { default as Yasqe, Token, Hint, Position, Config, HintFn, HintConfig } f
 import Trie from "../trie";
 import { EventEmitter } from "events";
 import { take } from "lodash-es";
-const CodeMirror = require("codemirror");
-require("./show-hint.scss");
+import CodeMirror from "codemirror";
+import "./show-hint.scss";
 export interface CompleterConfig {
   onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix autocompleter does
   isValidCompletionPosition: (yasqe: Yasqe) => boolean;
@@ -81,7 +81,7 @@ export class Completer extends EventEmitter {
     if (this.trie) return Promise.resolve(take(this.trie.autoComplete(stringToAutocomplete), SUGGESTIONS_LIMIT));
     if (this.config.get instanceof Array)
       return Promise.resolve(
-        this.config.get.filter((possibleMatch) => possibleMatch.indexOf(stringToAutocomplete) === 0)
+        this.config.get.filter((possibleMatch) => possibleMatch.indexOf(stringToAutocomplete) === 0),
       );
     //assuming it's a function
     return Promise.resolve(this.config.get(this.yasqe, token)).then((r) => {
@@ -300,7 +300,7 @@ export function postprocessIriCompletion(_yasqe: Yasqe, token: AutocompletionTok
 export const fetchFromLov = (
   yasqe: Yasqe,
   type: "class" | "property",
-  token?: AutocompletionToken
+  token?: AutocompletionToken,
 ): Promise<string[]> => {
   var reqProtocol = window.location.protocol.indexOf("http") === 0 ? "https://" : "http://";
   const notificationKey = "autocomplete_" + type;

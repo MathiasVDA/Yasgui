@@ -12,8 +12,8 @@ import { default as Yasr, Config as YasrConfig } from "@matdata/yasr";
 import { addClass, removeClass } from "@matdata/yasgui-utils";
 import GeoPlugin from "yasgui-geo-tg";
 import GraphPlugin from "@matdata/yasgui-graph-plugin";
-require("./index.scss");
-require("@matdata/yasr/src/scss/global.scss");
+import "./index.scss";
+import "../../yasr/src/scss/global.scss";
 
 // Register plugins to Yasr
 Yasr.registerPlugin("Geo", GeoPlugin);

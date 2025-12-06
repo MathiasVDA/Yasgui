@@ -24,13 +24,13 @@
   },
   "betterScripts": {
     "dev": {
-      "command": "npm run util:buildWebpackConfig && webpack-dev-server --host 0.0.0.0 --port 4000 --config ./webpack/config.js",
+      "command": "vite",
       "env": {
         "NODE_ENV": "development"
       }
     },
     "build": {
-      "command": "node -e \"require('fs').rmSync('./build', {recursive: true, force: true})\" && npm run util:buildWebpackConfig && webpack --config ./webpack/config.js && node webpack/distributeBuildFiles.js",
+      "command": "node esbuild.config.js && node webpack/distributeBuildFiles.js",
       "env": {
         "NODE_ENV": "production"
       }
@@ -81,6 +81,8 @@
     "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^7.0.3",
     "css-minimizer-webpack-plugin": "^5.0.0",
+    "esbuild": "^0.24.2",
+    "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-jest": "^23.8.1",
@@ -99,6 +101,7 @@
     "terser-webpack-plugin": "^5.3.10",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
+    "vite": "^5.4.11",
     "webpack": "^5.102.1",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^6.0.1",

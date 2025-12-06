@@ -44,8 +44,8 @@ export interface Token {
   string: string;
   start: number;
 }
+import * as grammar from "./_tokenizer-table.js";
 export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mode<State> {
-  const grammar = require("./_tokenizer-table.js");
   const ll1_table = grammar.table;
 
   const IRI_REF = '<[^<>"`|{}^\\\x00-\x20]*>';

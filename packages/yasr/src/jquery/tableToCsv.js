@@ -1,5 +1,5 @@
 "use strict";
-var $ = require("jquery");
+import $ from "jquery";
 
 $.fn.tableToCsv = function (config) {
   var csvString = "";
@@ -9,7 +9,7 @@ $.fn.tableToCsv = function (config) {
       delimiter: ",",
       lineBreak: "\n",
     },
-    config
+    config,
   );
 
   var needToQuoteString = function (value) {

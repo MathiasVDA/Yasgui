@@ -1,9 +1,9 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the plugin as standalone build
  */
-require("./index.scss");
-require("datatables.net-dt/css/dataTables.dataTables.min.css");
-require("datatables.net");
+import "./index.scss";
+import "datatables.net-dt/css/dataTables.dataTables.min.css";
+import "datatables.net";
 //@ts-ignore (jquery _does_ expose a default. In es6, it's the one we should use)
 import $ from "jquery";
 import Parser from "../../parsers";
@@ -17,7 +17,7 @@ import { cloneDeep } from "lodash-es";
 import sanitize from "../../helpers/sanitize";
 import type { Api, ConfigColumns, CellMetaSettings, Config } from "datatables.net";
 
-const ColumnResizer = require("column-resizer");
+import ColumnResizer from "column-resizer";
 const DEFAULT_PAGE_SIZE = 50;
 
 export interface PluginConfig {

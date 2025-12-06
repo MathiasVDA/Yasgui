@@ -1,8 +1,8 @@
 import Yasgui from "./";
 import TabContextMenu from "./TabContextMenu";
 import { hasClass, addClass, removeClass } from "@matdata/yasgui-utils";
-const sortablejs = require("sortablejs");
-require("./TabElements.scss");
+import sortablejs from "sortablejs";
+import "./TabElements.scss";
 export interface TabList {}
 export class TabListEl {
   private tabList: TabList;
@@ -234,7 +234,7 @@ export class TabList {
     this._tabsListEl.setAttribute("role", "tablist");
     this._tabsListEl.addEventListener("keydown", this.handleKeydownArrowKeys);
 
-    sortablejs.default.create(this._tabsListEl, {
+    sortablejs.create(this._tabsListEl, {
       group: "tabList",
       animation: 100,
       onUpdate: (_ev: any) => {
