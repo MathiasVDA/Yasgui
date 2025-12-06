@@ -11,11 +11,13 @@ import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@
 import { default as Yasr, Config as YasrConfig } from "@matdata/yasr";
 import { addClass, removeClass } from "@matdata/yasgui-utils";
 import GeoPlugin from "yasgui-geo-tg";
+import GraphPlugin from "@matdata/yasgui-graph-plugin";
 require("./index.scss");
 require("@matdata/yasr/src/scss/global.scss");
 
-// Register the GeoPlugin to Yasr
-Yasr.registerPlugin("geo", GeoPlugin);
+// Register plugins to Yasr
+Yasr.registerPlugin("Geo", GeoPlugin);
+Yasr.registerPlugin("Graph", GraphPlugin);
 if (window) {
   //We're storing yasqe and yasr as a member of Yasgui, but _also_ in the window
   //That way, we dont have to tweak e.g. pro plugins to register themselves to both
