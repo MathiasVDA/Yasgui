@@ -30,6 +30,17 @@ Go to https://yasgui.matdata.eu/ and use it freely in production. Or fork this r
 
 ## Features
 
+### Themes
+
+Yasgui supports both **light** and **dark** themes with instant switching:
+
+- **Theme Toggle Button**: Quickly switch between light and dark modes using the button in the tab bar
+- **Persistent Preference**: Your theme choice is automatically saved
+- **System Detection**: Automatically matches your system's dark/light mode preference
+- **Full Coverage**: Consistent theming across all components (editor, results, modals)
+
+See the [Theme Guide](./THEME_GUIDE.md) for detailed configuration options and usage examples.
+
 ### Keyboard Shortcuts
 
 #### Query Editor (Yasqe)

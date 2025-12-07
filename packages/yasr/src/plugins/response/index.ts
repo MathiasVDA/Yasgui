@@ -15,6 +15,7 @@ import "codemirror/mode/xml/xml.js";
 
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material-palenight.css";
 import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@matdata/yasgui-utils";
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 import { DeepReadonly } from "ts-essentials";
@@ -78,6 +79,10 @@ export default class Response implements Plugin<PluginConfig> {
       value = lines.slice(0, config.maxLines).join("\n");
     }
 
+    // Detect current theme from document
+    const isDarkTheme = document.documentElement.getAttribute("data-theme") === "dark";
+    const cmTheme = isDarkTheme ? "material-palenight" : "default";
+
     const codemirrorOpts: Partial<CodeMirror.EditorConfiguration> = {
       readOnly: true,
       lineNumbers: true,
@@ -86,6 +91,7 @@ export default class Response implements Plugin<PluginConfig> {
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       value: value,
       extraKeys: { Tab: false },
+      theme: cmTheme,
     };
     const mode = this.yasr.results?.getType();
     if (mode === "json") {

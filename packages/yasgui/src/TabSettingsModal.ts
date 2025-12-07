@@ -1,6 +1,19 @@
-import { addClass, removeClass, drawSvgStringAsElement } from "@matdata/yasgui-utils";
+import { addClass, removeClass } from "@matdata/yasgui-utils";
 import "./TabSettingsModal.scss";
 import Tab from "./Tab";
+
+// Theme toggle icons
+const MOON_ICON = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+</svg>`;
+
+const SUN_ICON = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+</svg>`;
+
+const SETTINGS_ICON = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <path d="M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.09-.16-.26-.25-.44-.25-.06 0-.12.01-.17.03l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.06-.02-.12-.03-.18-.03-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.09.16.26.25.44.25.06 0 .12-.01.17-.03l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-7.43 2.52c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+</svg>`;
 
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },
@@ -24,6 +37,7 @@ export default class TabSettingsModal {
   private modalOverlay!: HTMLElement;
   private modalContent!: HTMLElement;
   private settingsButton!: HTMLButtonElement;
+  private themeToggleButton!: HTMLButtonElement;
   private prefixButton!: HTMLButtonElement;
   private prefixTextarea!: HTMLTextAreaElement;
   private autoCaptureCheckbox!: HTMLInputElement;
@@ -36,19 +50,26 @@ export default class TabSettingsModal {
   private init(controlBarEl: HTMLElement) {
     // Settings button
     this.settingsButton = document.createElement("button");
+    addClass(this.settingsButton, "tabContextButton");
     this.settingsButton.setAttribute("aria-label", "Settings");
     this.settingsButton.title = "Settings";
-    this.settingsButton.appendChild(
-      drawSvgStringAsElement(
-        `<svg width="100.06" height="100.05" data-name="Layer 1" version="1.1" viewBox="0 0 100.06 100.05" xmlns="http://www.w3.org/2000/svg">
-        <title>Settings</title>
-        <path d="m95.868 58.018-3-3.24a42.5 42.5 0 0 0 0-9.43l3-3.22c1.79-1.91 5-4.44 4-6.85l-4.11-10c-1-2.41-5.08-1.91-7.69-2l-4.43-0.16a43.24 43.24 0 0 0-6.64-6.66l-0.14-4.43c-0.08-2.6 0.43-6.69-2-7.69l-10-4.15c-2.4-1-4.95 2.25-6.85 4l-3.23 3a42.49 42.49 0 0 0-9.44 0l-3.21-3c-1.9-1.78-4.44-5-6.85-4l-10 4.11c-2.41 1-1.9 5.09-2 7.69l-0.16 4.42a43.24 43.24 0 0 0-6.67 6.65l-4.42 0.14c-2.6 0.08-6.69-0.43-7.69 2l-4.15 10c-1 2.4 2.25 4.94 4 6.84l3 3.23a42.49 42.49 0 0 0 0 9.44l-3 3.22c-1.78 1.9-5 4.43-4 6.84l4.11 10c1 2.41 5.09 1.91 7.7 2l4.41 0.15a43.24 43.24 0 0 0 6.66 6.68l0.13 4.41c0.08 2.6-0.43 6.7 2 7.7l10 4.15c2.4 1 4.94-2.25 6.84-4l3.24-3a42.5 42.5 0 0 0 9.42 0l3.22 3c1.91 1.79 4.43 5 6.84 4l10-4.11c2.41-1 1.91-5.08 2-7.7l0.15-4.42a43.24 43.24 0 0 0 6.68-6.65l4.42-0.14c2.6-0.08 6.7 0.43 7.7-2l4.15-10c1.04-2.36-2.22-4.9-3.99-6.82zm-45.74 15.7c-12.66 0-22.91-10.61-22.91-23.7s10.25-23.7 22.91-23.7 22.91 10.61 22.91 23.7-10.25 23.7-22.91 23.7z"/>
-       </svg>`,
-      ),
-    );
-    addClass(this.settingsButton, "tabContextButton");
-    controlBarEl.appendChild(this.settingsButton);
+    this.settingsButton.innerHTML = SETTINGS_ICON;
     this.settingsButton.onclick = () => this.open();
+    controlBarEl.appendChild(this.settingsButton);
+
+    // Theme toggle button (if enabled)
+    if (this.tab.yasgui.config.showThemeToggle) {
+      this.themeToggleButton = document.createElement("button");
+      addClass(this.themeToggleButton, "themeToggle");
+      this.themeToggleButton.setAttribute("aria-label", "Toggle between light and dark theme");
+      this.themeToggleButton.title = "Toggle theme";
+      this.themeToggleButton.innerHTML = this.getThemeToggleIcon();
+      this.themeToggleButton.addEventListener("click", () => {
+        this.tab.yasgui.toggleTheme();
+        this.themeToggleButton.innerHTML = this.getThemeToggleIcon();
+      });
+      controlBarEl.appendChild(this.themeToggleButton);
+    }
 
     // Prefix button
     this.prefixButton = document.createElement("button");
@@ -77,7 +98,7 @@ export default class TabSettingsModal {
     const header = document.createElement("div");
     addClass(header, "modalHeader");
     const title = document.createElement("h2");
-    title.textContent = "Tab Settings";
+    title.textContent = "Settings";
     header.appendChild(title);
 
     const closeBtn = document.createElement("button");
@@ -414,6 +435,13 @@ export default class TabSettingsModal {
     const deduplicated = this.deduplicatePrefixes(combined);
 
     this.tab.yasgui.persistentConfig.setPrefixes(deduplicated);
+  }
+
+  private getThemeToggleIcon(): string {
+    const currentTheme = this.tab.yasgui.getTheme();
+    // In dark mode, show moon icon (clicking will switch to light)
+    // In light mode, show sun icon (clicking will switch to dark)
+    return currentTheme === "dark" ? MOON_ICON : SUN_ICON;
   }
 
   public destroy() {

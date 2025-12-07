@@ -32,9 +32,13 @@
     background: none;
     align-self: center;
     padding-left: 10px;
+    padding-right: 10px;
     cursor: pointer;
-    color: #505050;
-    fill: #505050;
+    color: var(--yasgui-button-text, #505050);
+    fill: var(--yasgui-button-text, #505050);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     .svgImg {
       width: 15px;
@@ -43,13 +47,13 @@
     }
     // IE11 Needs this specified otherwise it will not resize the svg
     svg {
-      max-width: 15px;
-      max-height: 15px;
+      width: 20px;
+      height: 20px;
     }
 
     &:hover {
-      color: black;
-      fill: black;
+      color: var(--yasgui-button-hover, black);
+      fill: var(--yasgui-button-hover, black);
     }
   }
 

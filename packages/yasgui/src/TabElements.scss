@@ -18,6 +18,33 @@ $minTabHeight: 35px;
       border-bottom: 2px solid transparent;
       box-sizing: border-box;
     }
+    .themeToggle {
+      cursor: pointer;
+      height: 100%;
+      margin-left: auto;
+      margin-right: 10px;
+      padding: 6px 8px;
+      background: transparent;
+      border: none;
+      color: var(--yasgui-button-text, #505050);
+      fill: var(--yasgui-button-text, #505050);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+
+      &:hover {
+        color: var(--yasgui-button-hover, #000);
+        fill: var(--yasgui-button-hover, #000);
+        background: var(--yasgui-bg-secondary, #f7f7f7);
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
     .addTab {
       cursor: pointer;
       height: 100%;
@@ -80,7 +107,7 @@ $minTabHeight: 35px;
       }
       &.active a {
         border-bottom-color: $activeColor;
-        color: #555;
+        color: var(--yasgui-text-primary, #555);
       }
       input {
         display: none;
@@ -100,7 +127,7 @@ $minTabHeight: 35px;
       }
       a {
         font-weight: 600;
-        color: color.adjust(#555, $lightness: 20%);
+        color: var(--yasgui-text-secondary, color.adjust(#555, $lightness: 20%));
         font-size: 15px;
         line-height: 1.5rem;
         font-weight: 500;
@@ -110,17 +137,17 @@ $minTabHeight: 35px;
         overflow: hidden;
         &:hover {
           border-bottom-color: $hoverColor;
-          color: #555;
+          color: var(--yasgui-text-primary, #555);
         }
         &:focus {
           border-bottom-color: #faa857;
-          color: #555;
+          color: var(--yasgui-text-primary, #555);
         }
         .closeTab {
-          color: #000;
+          color: var(--yasgui-text-primary, #000);
           margin-left: 7px;
           font-size: 15px;
-          text-shadow: 0 1px 0 #fff;
+          text-shadow: 0 1px 0 var(--yasgui-bg-primary, #fff);
           opacity: 0.2;
           font-weight: 700;
           padding: 2px;

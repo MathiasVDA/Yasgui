@@ -25,8 +25,8 @@
     z-index: 4;
     padding: 0 5px;
     max-height: 0px;
-    color: #999;
-    background-color: #eee;
+    color: var(--yasgui-notification-text, #999);
+    background-color: var(--yasgui-notification-bg, #eee);
     font-size: 90%;
     text-align: center;
     transition: max-height 0.2s ease-in;

@@ -1,3 +1,28 @@
+.themeToggle {
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+  border: none;
+  padding: 6px 8px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
 .tabPrefixButton {
   cursor: pointer;
   background: transparent;
@@ -35,7 +60,7 @@
 }
 
 .tabSettingsModal {
-  background: white;
+  background: var(--yasgui-bg-primary, white);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   max-width: 800px;
@@ -51,12 +76,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--yasgui-border-color, #e0e0e0);
 
   h2 {
     margin: 0;
     font-size: 20px;
     font-weight: 600;
+    color: var(--yasgui-text-primary, #000);
   }
 
   .closeButton {
@@ -65,13 +91,13 @@
     font-size: 32px;
     line-height: 1;
     cursor: pointer;
-    color: #666;
+    color: var(--yasgui-text-secondary, #666);
     padding: 0;
     width: 32px;
     height: 32px;
 
     &:hover {
-      color: #333;
+      color: var(--yasgui-text-primary, #333);
     }
   }
 }
@@ -86,7 +112,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--yasgui-border-color, #e0e0e0);
 }
 
 .modalTabButton {
@@ -96,18 +122,18 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  color: #666;
+  color: var(--yasgui-text-secondary, #666);
   border-bottom: 3px solid transparent;
   margin-bottom: -2px;
   transition: all 0.2s;
 
   &:hover {
-    color: #337ab7;
+    color: var(--yasgui-accent-color, #337ab7);
   }
 
   &.active {
-    color: #337ab7;
-    border-bottom-color: #337ab7;
+    color: var(--yasgui-accent-color, #337ab7);
+    border-bottom-color: var(--yasgui-accent-color, #337ab7);
   }
 }
 
@@ -128,11 +154,12 @@
   margin-bottom: 8px;
   font-size: 14px;
   display: block;
+  color: var(--yasgui-text-primary, #000);
 }
 
 .settingsHelp {
   font-size: 12px;
-  color: #666;
+  color: var(--yasgui-text-secondary, #666);
   margin-bottom: 10px;
   font-style: italic;
 }
@@ -140,13 +167,15 @@
 .settingsSelect {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--yasgui-input-border, #ccc);
   border-radius: 4px;
   font-size: 14px;
+  background-color: var(--yasgui-bg-secondary, white);
+  color: var(--yasgui-text-primary, #000);
 
   &:focus {
     outline: none;
-    border-color: #337ab7;
+    border-color: var(--yasgui-input-focus, #337ab7);
     box-shadow: 0 0 0 2px rgba(51, 122, 183, 0.1);
   }
 }
@@ -154,17 +183,19 @@
 .prefixTextarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--yasgui-input-border, #ccc);
   border-radius: 4px;
   font-family: monospace;
   font-size: 13px;
   resize: vertical;
   box-sizing: border-box;
   min-height: 200px;
+  background-color: var(--yasgui-bg-secondary, white);
+  color: var(--yasgui-text-primary, #000);
 
   &:focus {
     outline: none;
-    border-color: #337ab7;
+    border-color: var(--yasgui-input-focus, #337ab7);
     box-shadow: 0 0 0 2px rgba(51, 122, 183, 0.1);
   }
 }
@@ -186,12 +217,13 @@
     font-size: 14px;
     user-select: none;
     margin: 0;
+    color: var(--yasgui-text-primary, #000);
   }
 }
 
 .modalFooter {
   padding: 15px 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--yasgui-border-color, #e0e0e0);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -208,19 +240,19 @@
 }
 
 .primaryButton {
-  background: #337ab7;
+  background: var(--yasgui-accent-color, #337ab7);
   color: white;
 
   &:hover {
-    background: #286090;
+    background: var(--yasgui-link-hover, #286090);
   }
 }
 
 .secondaryButton {
-  background: #e0e0e0;
-  color: #333;
+  background: var(--yasgui-bg-tertiary, #e0e0e0);
+  color: var(--yasgui-text-primary, #333);
 
   &:hover {
-    background: #d0d0d0;
+    background: var(--yasgui-border-color, #d0d0d0);
   }
 }
