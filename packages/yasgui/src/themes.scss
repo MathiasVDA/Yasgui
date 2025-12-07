@@ -158,6 +158,62 @@
       height: 20px;
     }
   }
+
+  // Endpoint textbox theming
+  .autocomplete {
+    background-color: var(--yasgui-bg-primary) !important;
+    color: var(--yasgui-text-primary) !important;
+    border-color: var(--yasgui-border-color) !important;
+
+    &:hover {
+      border-color: var(--yasgui-border-color-light) !important;
+    }
+
+    &:focus {
+      border-color: var(--yasgui-accent-color) !important;
+    }
+  }
+
+  .autocompleteList {
+    background: var(--yasgui-bg-primary) !important;
+    border-color: var(--yasgui-border-color) !important;
+
+    .autoComplete_result {
+      color: var(--yasgui-text-primary);
+
+      b {
+        color: var(--yasgui-accent-color) !important;
+      }
+
+      &.autoComplete_selected,
+      &:hover {
+        background: var(--yasgui-bg-secondary) !important;
+      }
+
+      .removeItem {
+        color: var(--yasgui-text-primary) !important;
+        text-shadow: none !important;
+
+        &:hover {
+          color: var(--yasgui-accent-color) !important;
+        }
+      }
+    }
+
+    .noResults {
+      color: var(--yasgui-text-muted);
+    }
+  }
+
+  .clearEndpointBtn {
+    background-color: var(--yasgui-bg-secondary) !important;
+    border-color: var(--yasgui-border-color) !important;
+    color: var(--yasgui-button-text) !important;
+
+    &:hover {
+      background-color: var(--yasgui-bg-tertiary) !important;
+    }
+  }
 }
 
 // Yasqe (editor) theming
@@ -185,6 +241,65 @@
 
   .parseErrorIcon svg g {
     fill: var(--yasgui-error-color);
+  }
+
+  // Yasqe buttons theming (share, query, fullscreen)
+  .yasqe_buttons {
+    svg {
+      fill: var(--yasgui-button-text) !important;
+    }
+
+    .yasqe_share {
+      &:hover svg {
+        fill: var(--yasgui-button-hover) !important;
+      }
+    }
+
+    .yasqe_fullscreenButton {
+      &:hover svg {
+        fill: var(--yasgui-accent-color) !important;
+      }
+    }
+
+    .yasqe_sharePopup {
+      background-color: var(--yasgui-bg-primary) !important;
+      border-color: var(--yasgui-border-color) !important;
+
+      input,
+      textarea {
+        background-color: var(--yasgui-bg-secondary);
+        color: var(--yasgui-text-primary);
+        border-color: var(--yasgui-border-color);
+      }
+    }
+  }
+
+  .yasqe_btn {
+    background-color: var(--yasgui-bg-primary) !important;
+    color: var(--yasgui-text-primary) !important;
+    border-color: var(--yasgui-border-color) !important;
+
+    &:hover {
+      background-color: var(--yasgui-bg-secondary) !important;
+      border-color: var(--yasgui-border-color-light) !important;
+    }
+
+    &:focus,
+    &.selected {
+      background-color: var(--yasgui-accent-color) !important;
+      border-color: var(--yasgui-accent-color) !important;
+      color: var(--yasgui-bg-primary) !important;
+    }
+
+    &.btn_icon:focus {
+      background-color: var(--yasgui-bg-primary) !important;
+      color: var(--yasgui-text-primary) !important;
+      border-color: var(--yasgui-border-color) !important;
+    }
+  }
+
+  &.fullscreen {
+    background: var(--yasgui-bg-primary) !important;
   }
 }
 
@@ -292,6 +407,55 @@
   }
 
   // Response plugin theming
+  .yasr_results {
+    .CodeMirror {
+      background-color: var(--yasgui-bg-primary) !important;
+      color: var(--yasgui-text-primary) !important;
+      border-color: var(--yasgui-border-color) !important;
+
+      &.overflow::before {
+        background: linear-gradient(
+          transparent 0%,
+          var(--yasgui-bg-primary) 75%,
+          var(--yasgui-bg-primary) 100%
+        ) !important;
+      }
+    }
+
+    .overlay_content {
+      background: var(--yasgui-bg-primary) !important;
+      background: linear-gradient(
+        to right,
+        transparent,
+        var(--yasgui-bg-primary) 5%,
+        var(--yasgui-bg-primary) 95%,
+        transparent 100%
+      ) !important;
+    }
+
+    .yasr_btn.overlay_btn {
+      background: var(--yasgui-bg-primary) !important;
+      color: var(--yasgui-accent-color) !important;
+      border-color: var(--yasgui-accent-color) !important;
+
+      svg {
+        fill: var(--yasgui-accent-color) !important;
+        color: var(--yasgui-accent-color) !important;
+      }
+
+      &:hover {
+        color: var(--yasgui-link-hover) !important;
+        border-color: var(--yasgui-accent-color) !important;
+        fill: var(--yasgui-link-hover) !important;
+
+        svg {
+          color: var(--yasgui-link-hover) !important;
+          fill: var(--yasgui-link-hover) !important;
+        }
+      }
+    }
+  }
+
   .cm-s-default {
     background-color: var(--yasgui-bg-primary);
     color: var(--yasgui-text-primary);
