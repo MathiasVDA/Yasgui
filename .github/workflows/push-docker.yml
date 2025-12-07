@@ -1,14 +1,10 @@
 name: Build and Push Docker Image
+
 permissions:
-  contents: read
-  packages: write
-  id-token: write
-  pages: write
+    contents: read
+    id-token: write
 
 on:
-  push:
-    branches:
-      - main
   release:
     types: [published]
 
