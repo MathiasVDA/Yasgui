@@ -56,7 +56,7 @@
       // redeclared here to target yasr_btns in btnGroup
       border-bottom: 2px solid transparent;
       &.selected {
-        border-bottom: 2px solid #337ab7;
+        border-bottom: 2px solid var(--yasgui-accent-color, #337ab7);
       }
       padding-left: 6px;
       padding-right: 6px;
@@ -123,8 +123,8 @@
     }
   }
   .yasr_btn {
-    color: #505050;
-    fill: #505050;
+    color: var(--yasgui-button-text, #505050);
+    fill: var(--yasgui-button-text, #505050);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,8 +145,8 @@
       box-shadow: none;
     }
     &:not(.disabled):hover {
-      fill: black;
-      color: black;
+      fill: var(--yasgui-button-hover, black);
+      color: var(--yasgui-button-hover, black);
     }
   }
 
@@ -191,8 +191,8 @@
     }
     &:focus,
     &.selected {
-      color: #337ab7;
-      fill: #337ab7;
+      color: var(--yasgui-accent-color, #337ab7);
+      fill: var(--yasgui-accent-color, #337ab7);
     }
   }
 
