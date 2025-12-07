@@ -46,5 +46,15 @@ jobs:
             fi
           done
 
+      - name: Copy README to all packages
+        run: |
+          echo "Copying README.md to all packages"
+          for package_dir in packages/*/; do
+            if [ -f "${package_dir}package.json" ]; then
+              echo "Copying README.md to ${package_dir}"
+              cp README.md "${package_dir}README.md"
+            fi
+          done
+
       - name: Publish to npm using Changesets
         run: npx changeset publish --no-git-tag
