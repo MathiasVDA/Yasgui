@@ -100,13 +100,25 @@
     color: var(--yasgui-text-primary);
     border-color: var(--yasgui-tab-border);
 
+    a {
+      color: var(--yasgui-text-primary);
+    }
+
     &.active {
       background: var(--yasgui-tab-bg-active);
       border-bottom-color: var(--yasgui-tab-bg-active);
+
+      a {
+        color: var(--yasgui-text-primary);
+      }
     }
 
     &:hover:not(.active) {
       background: var(--yasgui-bg-secondary);
+
+      a {
+        color: var(--yasgui-text-primary);
+      }
     }
   }
 
@@ -226,8 +238,8 @@
   }
 
   .notification {
-    color: var(--yasgui-notification-text);
-    background-color: var(--yasgui-notification-bg);
+    color: var(--yasgui-notification-text) !important;
+    background-color: var(--yasgui-notification-bg) !important;
   }
 
   .yasqe_tooltip {
@@ -301,6 +313,21 @@
   &.fullscreen {
     background: var(--yasgui-bg-primary) !important;
   }
+}
+
+// CodeMirror hints theming
+.CodeMirror-hints {
+  background: var(--yasgui-bg-primary) !important;
+  border-color: var(--yasgui-border-color) !important;
+}
+
+.CodeMirror-hint {
+  color: var(--yasgui-text-primary) !important;
+}
+
+li.CodeMirror-hint-active {
+  background: var(--yasgui-accent-color) !important;
+  color: var(--yasgui-bg-primary) !important;
 }
 
 // Yasr (results) theming

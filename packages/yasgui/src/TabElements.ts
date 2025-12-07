@@ -257,20 +257,6 @@ export class TabList {
       },
     });
 
-    // Add theme toggle button if enabled
-    if (this.yasgui.config.showThemeToggle) {
-      const themeToggleEl = document.createElement("button");
-      themeToggleEl.className = "themeToggle";
-      themeToggleEl.title = "Toggle theme";
-      themeToggleEl.setAttribute("aria-label", "Toggle between light and dark theme");
-      themeToggleEl.innerHTML = this.getThemeToggleIcon();
-      themeToggleEl.addEventListener("click", () => {
-        this.yasgui.toggleTheme();
-        themeToggleEl.innerHTML = this.getThemeToggleIcon();
-      });
-      this._tabsListEl.appendChild(themeToggleEl);
-    }
-
     this.addTabEl = document.createElement("div");
     this.addTabEl.setAttribute("role", "presentation");
 
@@ -343,12 +329,6 @@ export class TabList {
     } else {
       this._tabsListEl?.insertBefore(this._tabs[tabId].draw(tabConf.name), this.addTabEl || null);
     }
-  }
-  private getThemeToggleIcon(): string {
-    const currentTheme = this.yasgui.getTheme();
-    // In dark mode, show moon icon (clicking will switch to light)
-    // In light mode, show sun icon (clicking will switch to dark)
-    return currentTheme === "dark" ? MOON_ICON : SUN_ICON;
   }
   public destroy() {
     for (const tabId in this._tabs) {

@@ -2,6 +2,15 @@ import { addClass, removeClass, drawSvgStringAsElement } from "@matdata/yasgui-u
 import "./TabSettingsModal.scss";
 import Tab from "./Tab";
 
+// Theme toggle icons
+const MOON_ICON = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+</svg>`;
+
+const SUN_ICON = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+</svg>`;
+
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },
   { key: "XML", value: "application/sparql-results+xml" },
@@ -24,6 +33,7 @@ export default class TabSettingsModal {
   private modalOverlay!: HTMLElement;
   private modalContent!: HTMLElement;
   private settingsButton!: HTMLButtonElement;
+  private themeToggleButton!: HTMLButtonElement;
   private prefixButton!: HTMLButtonElement;
   private prefixTextarea!: HTMLTextAreaElement;
   private autoCaptureCheckbox!: HTMLInputElement;
@@ -49,6 +59,20 @@ export default class TabSettingsModal {
     addClass(this.settingsButton, "tabContextButton");
     controlBarEl.appendChild(this.settingsButton);
     this.settingsButton.onclick = () => this.open();
+
+    // Theme toggle button (if enabled)
+    if (this.tab.yasgui.config.showThemeToggle) {
+      this.themeToggleButton = document.createElement("button");
+      this.themeToggleButton.className = "themeToggle";
+      this.themeToggleButton.title = "Toggle theme";
+      this.themeToggleButton.setAttribute("aria-label", "Toggle between light and dark theme");
+      this.themeToggleButton.innerHTML = this.getThemeToggleIcon();
+      this.themeToggleButton.addEventListener("click", () => {
+        this.tab.yasgui.toggleTheme();
+        this.themeToggleButton.innerHTML = this.getThemeToggleIcon();
+      });
+      controlBarEl.appendChild(this.themeToggleButton);
+    }
 
     // Prefix button
     this.prefixButton = document.createElement("button");
@@ -414,6 +438,13 @@ export default class TabSettingsModal {
     const deduplicated = this.deduplicatePrefixes(combined);
 
     this.tab.yasgui.persistentConfig.setPrefixes(deduplicated);
+  }
+
+  private getThemeToggleIcon(): string {
+    const currentTheme = this.tab.yasgui.getTheme();
+    // In dark mode, show moon icon (clicking will switch to light)
+    // In light mode, show sun icon (clicking will switch to dark)
+    return currentTheme === "dark" ? MOON_ICON : SUN_ICON;
   }
 
   public destroy() {
