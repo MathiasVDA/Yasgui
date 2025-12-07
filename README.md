@@ -39,7 +39,9 @@ Yasgui supports both **light** and **dark** themes with instant switching:
 - **System Detection**: Automatically matches your system's dark/light mode preference
 - **Full Coverage**: Consistent theming across all components (editor, results, modals)
 
-See the [Theme Guide](./THEME_GUIDE.md) for detailed configuration options and usage examples.
+See the [Theme Guide](./docs/THEME_GUIDE.md) for detailed configuration options and usage examples.
+
+See the [Theme Implementation Guide](./docs/THEME_IMPLEMENTATION_GUIDE.md) for detailed instructions on how to implement theme support in your own Yasgui plugins.
 
 ### Keyboard Shortcuts
 
@@ -138,3 +140,9 @@ Run `npm run build`. It'll store the transpiled js/css files in the `build` dire
 This is a fork from [Zazuko](https://github.com/zazuko/Yasgui) who forked it from [Triply](https://github.com/TriplyDB/Yasgui).
 
 This code is released under the MIT license.
+
+## Release notes
+
+Release notes can be found in the release section of the GitHub repository: [Yasgui Releases](https://github.com/Matdata-eu/yasgui/releases)
+
+Instructions on how to write release notes are found in 
