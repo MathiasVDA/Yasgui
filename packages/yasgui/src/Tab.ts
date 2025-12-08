@@ -222,6 +222,7 @@ export class Tab extends EventEmitter {
   }
   private initControlbar() {
     this.initEndpointSelectField();
+    this.initEndpointButtons();
     if (this.yasgui.config.endpointInfo && this.controlBarEl) {
       this.controlBarEl.appendChild(this.yasgui.config.endpointInfo());
     }
@@ -251,6 +252,32 @@ export class Tab extends EventEmitter {
     this.endpointSelect.on("remove", (endpoint, endpointHistory) => {
       this.setEndpoint(endpoint, endpointHistory);
     });
+  }
+
+  private initEndpointButtons() {
+    if (!this.controlBarEl) throw new Error("Need to initialize wrapper elements before drawing endpoint buttons");
+    if (!this.yasgui.config.endpointButtons || this.yasgui.config.endpointButtons.length === 0) {
+      return; // No buttons to draw
+    }
+
+    const buttonsContainer = document.createElement("div");
+    addClass(buttonsContainer, "endpointButtonsContainer");
+
+    this.yasgui.config.endpointButtons.forEach((buttonConfig) => {
+      const button = document.createElement("button");
+      addClass(button, "endpointButton");
+      button.textContent = buttonConfig.label;
+      button.title = `Set endpoint to ${buttonConfig.endpoint}`;
+      button.setAttribute("aria-label", `Set endpoint to ${buttonConfig.endpoint}`);
+
+      button.addEventListener("click", () => {
+        this.setEndpoint(buttonConfig.endpoint);
+      });
+
+      buttonsContainer.appendChild(button);
+    });
+
+    this.controlBarEl.appendChild(buttonsContainer);
   }
 
   private checkEndpointForCors(endpoint: string) {
