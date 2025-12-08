@@ -30,6 +30,22 @@ Go to https://yasgui.matdata.eu/ and use it freely in production. Or fork this r
 
 ## Features
 
+### SPARQL 1.2 Support
+
+Yasgui now supports **SPARQL 1.2** (Working Draft) in addition to SPARQL 1.1:
+
+- **User-Selectable Version**: Switch between SPARQL 1.1 and 1.2 in the Settings modal (⚙ → Request tab → SPARQL Version)
+- **Quoted Triples**: RDF-star syntax with `<< subject predicate object >>` for reification
+- **Triple Term Functions**: `TRIPLE()`, `SUBJECT()`, `PREDICATE()`, `OBJECT()`, `isTRIPLE()` for working with triple terms
+- **Annotation Blocks**: `{| propertyList |}` syntax for inline triple annotations
+- **Date/Time Functions**: `ADJUST()` for timezone adjustments
+- **Full Validation**: Syntax highlighting and error checking for SPARQL 1.2 queries
+- **Backward Compatible**: SPARQL 1.1 remains the default; no breaking changes
+
+**Note**: SPARQL 1.2 is based on a [working draft](https://www.w3.org/TR/sparql12-query/) and may change. Some features may not be supported by all SPARQL endpoints.
+
+For developer documentation on implementing SPARQL version support, see the [SPARQL Version Configuration Guide](./docs/SPARQL_VERSION_CONFIGURATION.md).
+
 ### Themes
 
 Yasgui supports both **light** and **dark** themes with instant switching:
