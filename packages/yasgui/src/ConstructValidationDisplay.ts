@@ -1,5 +1,6 @@
 import { addClass, removeClass } from "@matdata/yasgui-utils";
 import { ValidationResult } from "./constructValidator";
+import { ValidationPattern } from "./Tab";
 import "./constructValidation.scss";
 
 /**
@@ -149,7 +150,7 @@ export default class ConstructValidationDisplay {
   /**
    * Format a validation pattern for display
    */
-  private formatPattern(pattern: any): string {
+  private formatPattern(pattern: ValidationPattern): string {
     const s = pattern.subject || "*";
     const p = pattern.predicate || "*";
     const o = pattern.object || "*";
