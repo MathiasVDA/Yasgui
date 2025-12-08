@@ -16,7 +16,7 @@ Yasgui supports multiple SPARQL versions (1.1 and 1.2) through a modular grammar
 
 Grammar files are located in `packages/yasqe/grammar/` and define the syntax rules for each SPARQL version:
 
-- **`sparql11-grammar.pl`**: SPARQL 1.1 grammar based on [W3C SPARQL 1.1 specification](http://www.w3.org/TR/2012/WD-sparql11-query-20120724/#sparqlGrammar)
+- **`sparql11-grammar.pl`**: SPARQL 1.1 grammar based on [W3C SPARQL 1.1 Recommendation](https://www.w3.org/TR/sparql11-query/)
 - **`sparql12-grammar.pl`**: SPARQL 1.2 grammar based on [W3C SPARQL 1.2 Working Draft](https://www.w3.org/TR/sparql12-query/)
 
 These files use EBNF (Extended Backus-Naur Form) in Prolog syntax to define grammar rules.
@@ -292,10 +292,15 @@ export const keywords = /^(EXISTING|NEW_KEYWORD_1|NEW_KEYWORD_2)/i;
 The SPARQL 1.2 implementation includes these specific additions:
 
 ### New Keywords
-- `TRIPLE`, `SUBJECT`, `PREDICATE`, `OBJECT`, `isTRIPLE`, `ADJUST`
+- `TRIPLE` - Create a triple term from subject, predicate, and object
+- `SUBJECT` - Extract subject from a triple term
+- `PREDICATE` - Extract predicate from a triple term
+- `OBJECT` - Extract object from a triple term
+- `isTRIPLE` - Test if a value is a triple term
+- `ADJUST` - Adjust datetime values by duration
 
 ### New Punctuation
-- `<<` and `>>` for quoted triples
+- `<<` and `>>` for quoted triples (RDF-star reification)
 - `{|` and `|}` for annotation blocks
 
 ### New Grammar Rules
@@ -307,11 +312,11 @@ The SPARQL 1.2 implementation includes these specific additions:
 In `_tokenizer-table12.js`:
 
 ```javascript
-// Add keywords
-export const keywords = /^(...|TRIPLE|SUBJECT|PREDICATE|OBJECT|isTRIPLE|ADJUST)/i;
+// Add keywords (add to existing keyword list)
+export const keywords = /^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|/* ...existing keywords... */|TRIPLE|SUBJECT|PREDICATE|OBJECT|isTRIPLE|ADJUST)/i;
 
-// Add punctuation (order matters!)
-export const punct = /^(\{\||\|\}|<<|>>|...)/;
+// Add punctuation (order matters! New tokens before similar existing ones)
+export const punct = /^(\{\||\|\}|<<|>>|\*|a|\.|\{|\}|/* ...existing punctuation... */)/;
 
 // Add grammar rules
 export const table = {
