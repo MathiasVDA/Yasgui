@@ -1,7 +1,8 @@
 /*
 
-SPARQL 1.1 grammar rules based on the Last Call Working Draft of 24/07/2012:
-  http://www.w3.org/TR/2012/WD-sparql11-query-20120724/#sparqlGrammar
+SPARQL 1.1/1.2 grammar rules based on:
+  SPARQL 1.1: http://www.w3.org/TR/2012/WD-sparql11-query-20120724/#sparqlGrammar
+  SPARQL 1.2: https://www.w3.org/TR/sparql12-query/
 
 Be careful with grammar notation - it is EBNF in prolog syntax!
 
@@ -356,7 +357,10 @@ objectList ==>
 	[object,*([',',object])].
 %[80]
 object ==>
-	[graphNode].
+	[graphNode,?(annotationBlock)].
+
+% SPARQL 1.2: Annotation blocks
+annotationBlock ==> ['{|',propertyListNotEmpty,'|}'].
 %[81]
 triplesSameSubjectPath ==> [varOrTerm,propertyListPathNotEmpty].
 triplesSameSubjectPath ==> [triplesNodePath,propertyListPath].
@@ -376,7 +380,7 @@ verbSimple ==> [var].
 objectListPath ==>
 	[objectPath,*([',',objectPath])].
 %[87]
-objectPath ==> [graphNodePath].
+objectPath ==> [graphNodePath,?(annotationBlock)].
 %[88]
 path ==> [pathAlternative].
 %[89].
@@ -470,6 +474,10 @@ graphTerm ==> [numericLiteral].
 graphTerm ==> [booleanLiteral].
 graphTerm ==> [blankNode].
 graphTerm ==> ['NIL'].
+graphTerm ==> [quotedTriple].  % SPARQL 1.2
+
+% SPARQL 1.2: Quoted triple syntax
+quotedTriple ==> ['<<',varOrTerm,(varOrIRIref or 'a'),varOrTerm,'>>'].
 %[110]
 expression ==> [conditionalOrExpression].
 %[111]
@@ -577,6 +585,14 @@ builtInCall ==> ['ISNUMERIC','(',expression,')'].
 builtInCall ==> [regexExpression].
 builtInCall ==> [existsFunc].
 builtInCall ==> [notExistsFunc].
+% SPARQL 1.2: Triple term functions
+builtInCall ==> ['TRIPLE','(',expression,',',expression,',',expression,')'].
+builtInCall ==> ['SUBJECT','(',expression,')'].
+builtInCall ==> ['PREDICATE','(',expression,')'].
+builtInCall ==> ['OBJECT','(',expression,')'].
+builtInCall ==> ['isTRIPLE','(',expression,')'].
+% SPARQL 1.2: Date/time function
+builtInCall ==> ['ADJUST','(',expression,',',expression,')'].
 %[122]
 regexExpression ==>
 	['REGEX','(',expression,',',expression,?([',',expression]),')'].
@@ -793,7 +809,15 @@ tm_keywords([
 'SAMPLE',
 'SEPARATOR',
 
-'STR'
+'STR',
+
+% SPARQL 1.2 keywords
+'TRIPLE',
+'SUBJECT',
+'PREDICATE',
+'OBJECT',
+'isTRIPLE',
+'ADJUST'
 ]).
 
 % Other tokens representing fixed, case sensitive, strings
@@ -809,6 +833,8 @@ tm_punct([
 '.'= '\\.',
 '{'= '\\{',
 '}'= '\\}',
+'{|'= '\\{\\|',  % SPARQL 1.2: Annotation block start
+'|}'= '\\|\\}',  % SPARQL 1.2: Annotation block end
 ','= ',',
 '('= '\\(',
 ')'= '\\)',
@@ -820,6 +846,8 @@ tm_punct([
 '='= '=',
 '!='= '!=',
 '!'= '!',
+'<<'= '<<',      % SPARQL 1.2: Quoted triple start
+'>>'= '>>',      % SPARQL 1.2: Quoted triple end
 '<='= '<=',
 '>='= '>=',
 '<'= '<',
