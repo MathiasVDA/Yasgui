@@ -99,6 +99,13 @@ Customize the header height used in the horizontal layout calculation by setting
 #### URI Explorer
 - **Ctrl+Click** on any URI in the query editor: Automatically executes a CONSTRUCT query to explore the clicked URI's connections (incoming and outgoing triples). The query runs in the background without modifying your current query in the editor.
 
+### CONSTRUCT Query Validation
+- **Pattern-Based Validation**: Define expected triple patterns for CONSTRUCT query results
+- **Visual Feedback**: Automatic warnings when expected patterns are missing from results
+- **Inference Rule Testing**: Ideal for validating SPARQL inference rules and catching typos
+- **Flexible Matching**: Supports exact matching, wildcards (*), and prefix matching
+- See the [CONSTRUCT Validation Guide](./docs/CONSTRUCT_VALIDATION.md) for detailed usage instructions
+
 ### Prefix Management
 - **PREFIX Button**: Insert saved prefix declarations into your query (replaces existing PREFIX lines at the beginning)
 - **Settings Modal**: Access via the settings button (⚙) to manage:
