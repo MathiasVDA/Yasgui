@@ -21,6 +21,11 @@
       background: white;
       border-bottom: 1px solid #ddd;
       padding: 5px;
+
+      // Hide the layout orientation toggle button in fullscreen mode
+      .orientationToggle {
+        display: none;
+      }
     }
 
     // Horizontal layout (side-by-side)
