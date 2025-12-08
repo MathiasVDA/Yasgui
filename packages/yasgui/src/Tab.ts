@@ -103,6 +103,7 @@ export class Tab extends EventEmitter {
 
     //yasr
     this.yasrWrapperEl = document.createElement("div");
+    this.yasrWrapperEl.className = "yasrWrapperEl";
 
     this.initTabSettingsMenu();
     this.rootEl.appendChild(editorWrapper);
