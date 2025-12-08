@@ -9,6 +9,17 @@ import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import "./tab.scss";
 import { getRandomId, default as Yasgui, YasguiRequestConfig } from "./";
+
+// Layout orientation toggle icons
+const HORIZONTAL_LAYOUT_ICON = `<svg viewBox="0 0 24 24" class="svgImg">
+  <rect x="2" y="4" width="9" height="16" stroke="currentColor" stroke-width="2" fill="none"/>
+  <rect x="13" y="4" width="9" height="16" stroke="currentColor" stroke-width="2" fill="none"/>
+</svg>`;
+
+const VERTICAL_LAYOUT_ICON = `<svg viewBox="0 0 24 24" class="svgImg">
+  <rect x="2" y="2" width="20" height="8" stroke="currentColor" stroke-width="2" fill="none"/>
+  <rect x="2" y="12" width="20" height="10" stroke="currentColor" stroke-width="2" fill="none"/>
+</svg>`;
 export interface PersistedJsonYasr extends YasrPersistentConfig {
   responseSummary: Parser.ResponseSummary;
 }
@@ -255,20 +266,9 @@ export class Tab extends EventEmitter {
   private updateOrientationToggleIcon() {
     if (!this.orientationToggleButton) return;
 
-    // Icon for horizontal layout (side-by-side rectangles)
-    const horizontalIcon = `<svg viewBox="0 0 24 24" fill="currentColor" class="svgImg">
-      <rect x="2" y="4" width="9" height="16" stroke="currentColor" stroke-width="2" fill="none"/>
-      <rect x="13" y="4" width="9" height="16" stroke="currentColor" stroke-width="2" fill="none"/>
-    </svg>`;
-
-    // Icon for vertical layout (stacked rectangles)
-    const verticalIcon = `<svg viewBox="0 0 24 24" fill="currentColor" class="svgImg">
-      <rect x="2" y="2" width="20" height="8" stroke="currentColor" stroke-width="2" fill="none"/>
-      <rect x="2" y="12" width="20" height="10" stroke="currentColor" stroke-width="2" fill="none"/>
-    </svg>`;
-
     // Show the icon for the layout we'll switch TO (not the current layout)
-    this.orientationToggleButton.innerHTML = this.currentOrientation === "vertical" ? horizontalIcon : verticalIcon;
+    this.orientationToggleButton.innerHTML =
+      this.currentOrientation === "vertical" ? HORIZONTAL_LAYOUT_ICON : VERTICAL_LAYOUT_ICON;
     this.orientationToggleButton.title =
       this.currentOrientation === "vertical" ? "Switch to horizontal layout" : "Switch to vertical layout";
   }
