@@ -30,6 +30,7 @@ export default function initialize(): Config<CatalogueItem> {
     yasr: Yasr.defaults,
     theme: undefined,
     showThemeToggle: true,
+    orientation: "vertical",
     endpointButtons: undefined,
     endpointCatalogueOptions: {
       getData: () => {
