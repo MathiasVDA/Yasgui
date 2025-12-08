@@ -1,5 +1,9 @@
 @use "scss/variables.scss";
 .yasr {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; // Minimum height for vertical layout to give plugins space
+
   .yasr_btn {
     border: none;
     background: inherit;
@@ -81,8 +85,10 @@
   .yasr_header {
     display: flex;
     flex-wrap: wrap;
+    flex-shrink: 0;
   }
   .yasr_fallback_info:not(:empty) {
+    flex-shrink: 0;
     margin-top: 5px;
     border: 1px solid #d1d1d1;
     padding: 0.5rem;
@@ -225,5 +231,11 @@
   .space_element {
     flex-grow: 1;
     min-width: 10px;
+  }
+
+  .yasr_results {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
   }
 }
