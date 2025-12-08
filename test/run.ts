@@ -648,4 +648,173 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       });
     });
   });
+
+  describe("SPARQL 1.2 Support", function () {
+    beforeEach(async function () {
+      // Set SPARQL version to 1.2 for these tests
+      await page.evaluate(() => {
+        window.yasqe.setSparqlVersion("1.2");
+      });
+    });
+
+    afterEach(async function () {
+      // Reset to SPARQL 1.1 after each test
+      await page.evaluate(() => {
+        window.yasqe.setSparqlVersion("1.1");
+      });
+    });
+
+    describe("Valid SPARQL 1.2 Queries", function () {
+      it("Should validate quoted triples (RDF-star) syntax", async function () {
+        const query = `PREFIX ex: <http://example.org/>
+SELECT ?person WHERE {
+  << ?s ?p ?o >> ex:assertedBy ?person .
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          // Force syntax check
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.true;
+      });
+
+      it("Should validate triple term functions", async function () {
+        const query = `PREFIX ex: <http://example.org/>
+SELECT ?subject ?predicate ?object WHERE {
+  ?triple ex:hasMetadata ?metadata .
+  BIND(TRIPLE(?s, ?p, ?o) AS ?triple)
+  BIND(SUBJECT(?triple) AS ?subject)
+  BIND(PREDICATE(?triple) AS ?predicate)
+  BIND(OBJECT(?triple) AS ?object)
+  FILTER(isTRIPLE(?triple))
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.true;
+      });
+
+      it("Should validate ADJUST date/time function", async function () {
+        const query = `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?adjustedTime WHERE {
+  ?event <http://example.org/timestamp> ?time .
+  BIND(ADJUST(?time, "PT5H"^^xsd:duration) AS ?adjustedTime)
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.true;
+      });
+
+      it("Should validate annotation blocks", async function () {
+        const query = `PREFIX ex: <http://example.org/>
+SELECT * WHERE {
+  ?s ?p ?o {| ex:confidence 0.9 ; ex:source "DBpedia" |} .
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.true;
+      });
+    });
+
+    describe("Invalid SPARQL 1.2 Queries", function () {
+      it("Should reject malformed quoted triples", async function () {
+        const query = `PREFIX ex: <http://example.org/>
+SELECT ?person WHERE {
+  << ?s ?p >> ex:assertedBy ?person .
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.false;
+      });
+
+      it("Should reject incorrect triple term function usage", async function () {
+        const query = `PREFIX ex: <http://example.org/>
+SELECT ?subject WHERE {
+  BIND(TRIPLE(?s) AS ?triple)
+  BIND(SUBJECT(?triple) AS ?subject)
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.false;
+      });
+
+      it("Should reject malformed annotation blocks", async function () {
+        const query = `PREFIX ex: <http://example.org/>
+SELECT * WHERE {
+  ?s ?p ?o {| ex:confidence 0.9 |
+}`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.false;
+      });
+    });
+
+    describe("SPARQL 1.1 Backward Compatibility", function () {
+      it("Should still validate standard SPARQL 1.1 queries in 1.2 mode", async function () {
+        const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT * WHERE {
+  ?sub ?pred ?obj .
+} LIMIT 10`;
+        const isValid = await page.evaluate((q) => {
+          window.yasqe.setValue(q);
+          window.yasqe.checkSyntax();
+          return window.yasqe.queryValid;
+        }, query);
+        expect(isValid).to.be.true;
+      });
+    });
+
+    describe("Keyword Recognition", function () {
+      it("Should recognize SPARQL 1.2 keywords", async function () {
+        const keywords = await page.evaluate(() => {
+          // Check if the editor recognizes new keywords
+          const query = `SELECT ?x WHERE {
+            BIND(TRIPLE(?s, ?p, ?o) AS ?t)
+            BIND(SUBJECT(?t) AS ?subj)
+            BIND(PREDICATE(?t) AS ?pred)
+            BIND(OBJECT(?t) AS ?obj)
+            FILTER(isTRIPLE(?t))
+            BIND(ADJUST(?time, "PT1H") AS ?adjusted)
+          }`;
+          window.yasqe.setValue(query);
+
+          // Get tokens and check if keywords are recognized
+          const tokens: string[] = [];
+          for (let i = 0; i < window.yasqe.lineCount(); i++) {
+            const line = window.yasqe.getLineTokens(i);
+            line.forEach((token: any) => {
+              if (token.type && token.type.includes("keyword")) {
+                tokens.push(token.string.toUpperCase());
+              }
+            });
+          }
+          return tokens;
+        });
+
+        expect(keywords).to.include("TRIPLE");
+        expect(keywords).to.include("SUBJECT");
+        expect(keywords).to.include("PREDICATE");
+        expect(keywords).to.include("OBJECT");
+        expect(keywords).to.include("ADJUST");
+      });
+    });
+  });
 });
