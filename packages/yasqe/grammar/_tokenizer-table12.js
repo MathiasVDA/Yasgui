@@ -4741,6 +4741,7 @@ export const table = {
     INTEGER_NEGATIVE: ["graphTerm"],
     DECIMAL_NEGATIVE: ["graphTerm"],
     DOUBLE_NEGATIVE: ["graphTerm"],
+    "<<": ["graphTerm"],
   },
   verb: {
     VAR1: ["storeProperty", "varOrIRIref"],
