@@ -358,9 +358,9 @@ export class Yasqe extends CodeMirror {
       addClass(formatIcon, "formatIcon");
       formatBtn.appendChild(formatIcon);
       formatBtn.onclick = () => {
-        this.formatQuery();
+        this.format();
       };
-      formatBtn.title = "Format query (Shift+Alt+F)";
+      formatBtn.title = "Format query (Shift+Ctrl+F)";
       formatBtn.setAttribute("aria-label", "Format query");
       buttons.appendChild(formatBtn);
     }
@@ -667,6 +667,8 @@ export class Yasqe extends CodeMirror {
       const currentQuery = this.getValue();
       const formatted = spfmt.format(currentQuery);
       this.setValue(formatted);
+      // Collapse prefixes after formatting
+      this.collapsePrefixes(true);
     } catch (error) {
       console.warn(
         "Failed to format SPARQL query using sparql-formatter. This may be due to syntax errors in the query. Falling back to legacy formatter.",
@@ -674,6 +676,15 @@ export class Yasqe extends CodeMirror {
       );
       // If formatting fails, fall back to the built-in autoformat
       this.autoformat();
+    }
+  }
+
+  public format() {
+    const formatterType = this.persistentConfig?.formatterType || "sparql-formatter";
+    if (formatterType === "legacy") {
+      this.autoformat();
+    } else {
+      this.formatQuery();
     }
   }
   //values in the form of {?var: 'value'}, or [{?var: 'value'}]
@@ -908,9 +919,9 @@ export class Yasqe extends CodeMirror {
    */
   public query(config?: Sparql.YasqeAjaxConfig) {
     if (this.config.queryingDisabled) return Promise.reject("Querying is disabled.");
-    // Auto-format query before execution if enabled
-    if (this.config.autoformatOnQuery) {
-      this.formatQuery();
+    // Auto-format query before execution if enabled in persistent config
+    if (this.persistentConfig?.autoformatOnQuery) {
+      this.format();
     }
     // Abort previous request
     this.abortQuery();
@@ -1119,11 +1130,12 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   queryingDisabled: string | undefined; // The string will be the message displayed when hovered
   prefixCcApi: string; // the suggested default prefixes URL API getter
   showFormatButton: boolean; // Show a button to format the query
-  autoformatOnQuery: boolean; // Auto-format the query when executing it
 }
 export interface PersistentConfig {
   query: string;
   editorHeight: string;
+  formatterType?: "sparql-formatter" | "legacy"; // Which formatter to use
+  autoformatOnQuery?: boolean; // Auto-format query on execution
 }
 // export var _Yasqe = _Yasqe;
 
