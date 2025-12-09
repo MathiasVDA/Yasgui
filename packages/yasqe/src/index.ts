@@ -91,6 +91,17 @@ export class Yasqe extends CodeMirror {
       }
       if (!this.persistentConfig)
         this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
+
+      // Ensure new properties have default values if not present
+      if (this.persistentConfig) {
+        if (this.persistentConfig.formatterType === undefined) {
+          this.persistentConfig.formatterType = "sparql-formatter";
+        }
+        if (this.persistentConfig.autoformatOnQuery === undefined) {
+          this.persistentConfig.autoformatOnQuery = false;
+        }
+      }
+
       if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
     }
     this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
