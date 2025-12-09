@@ -668,7 +668,10 @@ export class Yasqe extends CodeMirror {
       const formatted = spfmt.format(currentQuery);
       this.setValue(formatted);
     } catch (error) {
-      console.warn("Failed to format SPARQL query:", error);
+      console.warn(
+        "Failed to format SPARQL query using sparql-formatter. This may be due to syntax errors in the query. Falling back to legacy formatter.",
+        error,
+      );
       // If formatting fails, fall back to the built-in autoformat
       this.autoformat();
     }
