@@ -79,13 +79,32 @@ Customize the header height used in the horizontal layout calculation by setting
 }
 ```
 
+### SPARQL Query Formatting
+
+Yasqe includes a powerful SPARQL query formatter to help you write clean, readable queries:
+
+- **Format Button**: Click the format button in the editor toolbar to instantly format your query
+- **Keyboard Shortcut**: Use **Shift+Alt+F** to format the current query
+- **Auto-format on Query Execution**: Enable automatic formatting before query execution in your configuration:
+
+```javascript
+new Yasgui(document.getElementById("yasgui"), {
+  yasqe: {
+    autoformatOnQuery: true // Auto-format query before execution (default: false)
+  }
+});
+```
+
+The formatter uses the [sparql-formatter](https://github.com/sparqling/sparql-formatter) library to provide standards-compliant SPARQL formatting with proper indentation and line breaks.
+
 ### Keyboard Shortcuts
 
 #### Query Editor (Yasqe)
 - **Ctrl+Enter** / **Cmd+Enter**: Execute the current query
 - **Ctrl+Space**: Trigger autocomplete
 - **Ctrl+S**: Save query to local storage
-- **Shift+Ctrl+F**: Auto-format the query
+- **Shift+Ctrl+F**: Auto-format the query (legacy formatter)
+- **Shift+Alt+F**: Format query using SPARQL formatter
 - **Ctrl+/**: Comment/uncomment selected lines
 - **Shift+Ctrl+D**: Duplicate the current line
 - **Shift+Ctrl+K**: Delete the current line
