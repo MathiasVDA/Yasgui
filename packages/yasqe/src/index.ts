@@ -11,7 +11,7 @@ import { drawSvgStringAsElement, addClass, removeClass } from "@matdata/yasgui-u
 import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
 import * as Autocompleter from "./autocompleters";
-import { merge, escape } from "lodash-es";
+import { merge, mergeWith, escape } from "lodash-es";
 
 import getDefaults from "./defaults";
 import CodeMirror from "./CodeMirror";
@@ -68,7 +68,13 @@ export class Yasqe extends CodeMirror {
     this.rootEl = document.createElement("div");
     this.rootEl.className = "yasqe";
     parent.appendChild(this.rootEl);
-    this.config = merge({}, Yasqe.defaults, conf);
+    // Use mergeWith to replace arrays instead of merging them by index
+    // This ensures that snippets: [] properly overrides default snippets
+    this.config = mergeWith({}, Yasqe.defaults, conf, (objValue: any, srcValue: any) => {
+      if (Array.isArray(srcValue)) {
+        return srcValue;
+      }
+    });
     //inherit codemirror props
     const cm = (CodeMirror as any)(this.rootEl, this.config);
     //Assign our functions to the cm object. This is needed, as some functions (like the ctrl-enter callback)

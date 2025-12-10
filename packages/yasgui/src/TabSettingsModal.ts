@@ -416,7 +416,7 @@ export default class TabSettingsModal {
     const snippetsBarCheckbox = document.createElement("input");
     snippetsBarCheckbox.type = "checkbox";
     snippetsBarCheckbox.id = "showSnippetsBar";
-    snippetsBarCheckbox.checked = yasqe.getSnippetsBarVisible() ?? true;
+    snippetsBarCheckbox.checked = yasqe.getSnippetsBarVisible();
 
     const snippetsBarLabel = document.createElement("label");
     snippetsBarLabel.htmlFor = "showSnippetsBar";

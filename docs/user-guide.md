@@ -271,7 +271,7 @@ Quickly insert common SPARQL patterns and query types using the code snippets ba
 
 **How to Use:**
 1. Position your cursor where you want to insert code
-2. Click a snippet button in the snippets bar (below the toolbar)
+2. Click a snippet button in the snippets bar (above the editor)
 3. The code is inserted at your cursor position
 4. Continue editing as needed
 
