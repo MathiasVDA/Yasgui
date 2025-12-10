@@ -132,6 +132,34 @@ SELECT * WHERE {
     prefixCcApi: prefixCcApi,
     showFormatButton: true,
     checkConstructVariables: true,
+    snippets: [
+      {
+        label: "SELECT",
+        code: "SELECT * WHERE {\n  ?s ?p ?o .\n} LIMIT 10",
+        group: "Query Types",
+      },
+      {
+        label: "CONSTRUCT",
+        code: "CONSTRUCT {\n  ?s ?p ?o .\n} WHERE {\n  ?s ?p ?o .\n} LIMIT 10",
+        group: "Query Types",
+      },
+      {
+        label: "ASK",
+        code: "ASK {\n  ?s ?p ?o .\n}",
+        group: "Query Types",
+      },
+      {
+        label: "FILTER",
+        code: "FILTER (?var > 100)",
+        group: "Patterns",
+      },
+      {
+        label: "OPTIONAL",
+        code: "OPTIONAL {\n  ?s ?p ?o .\n}",
+        group: "Patterns",
+      },
+    ],
+    showSnippetsBar: true,
   };
   const requestConfig: PlainRequestConfig = {
     queryArgument: undefined, //undefined means: get query argument based on query mode

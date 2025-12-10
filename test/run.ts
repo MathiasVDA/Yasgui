@@ -824,4 +824,80 @@ WHERE {
       expect(result.warningCount).to.equal(0);
     });
   });
+
+  describe("Code Snippets", function () {
+    it("Should show snippets bar with default snippets", async function () {
+      const result = await page.evaluate(() => {
+        return {
+          barExists: !!document.querySelector(".yasqe_snippetsBar"),
+          snippetCount: document.querySelectorAll(".yasqe_snippetButton").length,
+          snippets: window.yasqe.config.snippets.map((s: any) => s.label),
+        };
+      });
+
+      expect(result.barExists).to.be.true;
+      expect(result.snippetCount).to.equal(5);
+      expect(result.snippets).to.include("SELECT");
+      expect(result.snippets).to.include("CONSTRUCT");
+      expect(result.snippets).to.include("ASK");
+      expect(result.snippets).to.include("FILTER");
+      expect(result.snippets).to.include("OPTIONAL");
+    });
+
+    it("Should insert snippet at cursor position", async function () {
+      await page.evaluate(() => {
+        window.yasqe.setValue("SELECT * WHERE {\n  \n}");
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 1, ch: 2 });
+      });
+
+      // Click the FILTER snippet button
+      await page.click('button[aria-label="Insert FILTER snippet"]');
+
+      const value = await page.evaluate(() => window.yasqe.getValue());
+      expect(value).to.include("FILTER (?var > 100)");
+    });
+
+    it("Should not show snippets bar when disabled", async function () {
+      await page.evaluate(() => {
+        window.yasqe.setSnippetsBarVisible(false);
+      });
+
+      const barExists = await page.evaluate(() => {
+        return !!document.querySelector(".yasqe_snippetsBar");
+      });
+
+      expect(barExists).to.be.false;
+    });
+
+    it("Should show snippets bar when re-enabled", async function () {
+      await page.evaluate(() => {
+        window.yasqe.setSnippetsBarVisible(true);
+      });
+
+      const barExists = await page.evaluate(() => {
+        return !!document.querySelector(".yasqe_snippetsBar");
+      });
+
+      expect(barExists).to.be.true;
+    });
+
+    it("Should hide snippets bar when no snippets configured", async function () {
+      const result = await page.evaluate(() => {
+        const container = document.createElement("div");
+        container.id = "test-yasqe-no-snippets";
+        document.body.appendChild(container);
+
+        const testYasqe = new window.Yasqe(container, {
+          snippets: [],
+        });
+
+        return {
+          barExists: !!testYasqe.rootEl.querySelector(".yasqe_snippetsBar"),
+        };
+      });
+
+      expect(result.barExists).to.be.false;
+    });
+  });
 });

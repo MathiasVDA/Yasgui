@@ -292,4 +292,110 @@
       height: calc(100vh - 150px) !important;
     }
   }
+
+  .yasqe_snippetsBar {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 5px 10px;
+    background-color: var(--yasgui-bg-primary, #fff);
+    border-bottom: 1px solid var(--yasgui-border-color, #e3e3e3);
+    order: -1; // Place before CodeMirror in flex layout
+
+    .yasqe_snippetButton {
+      padding: 4px 10px;
+      font-size: 12px;
+      border: 1px solid var(--yasgui-border-color, #ccc);
+      background-color: var(--yasgui-bg-primary, #fff);
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--yasgui-text-primary, #333);
+
+      &:hover {
+        background-color: var(--yasgui-bg-secondary, #f0f0f0);
+        border-color: var(--yasgui-text-muted, #999);
+      }
+
+      &:active {
+        background-color: var(--yasgui-bg-tertiary, #e0e0e0);
+      }
+    }
+
+    .yasqe_snippetDropdown {
+      position: relative;
+      display: inline-block;
+
+      .yasqe_snippetDropdownButton {
+        padding: 4px 10px;
+        font-size: 12px;
+        border: 1px solid var(--yasgui-border-color, #ccc);
+        background-color: var(--yasgui-bg-primary, #fff);
+        border-radius: 3px;
+        cursor: pointer;
+        white-space: nowrap;
+        color: var(--yasgui-text-primary, #333);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .chevronIcon {
+          width: 16px;
+          height: 16px;
+          svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--yasgui-text-secondary, #505050);
+          }
+        }
+
+        &:hover {
+          background-color: var(--yasgui-bg-secondary, #f0f0f0);
+          border-color: var(--yasgui-text-muted, #999);
+        }
+
+        &[aria-expanded="true"] {
+          background-color: var(--yasgui-bg-tertiary, #e0e0e0);
+        }
+      }
+
+      .yasqe_snippetDropdownContent {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 2px;
+        background-color: var(--yasgui-bg-primary, #fff);
+        border: 1px solid var(--yasgui-border-color, #ccc);
+        border-radius: 3px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+        min-width: 150px;
+        max-height: 300px;
+        overflow-y: auto;
+
+        .yasqe_snippetDropdownItem {
+          display: block;
+          width: 100%;
+          padding: 6px 12px;
+          border: none;
+          background: none;
+          text-align: left;
+          cursor: pointer;
+          font-size: 12px;
+          color: var(--yasgui-text-primary, #333);
+          white-space: nowrap;
+
+          &:hover {
+            background-color: var(--yasgui-bg-secondary, #f0f0f0);
+          }
+
+          &:active {
+            background-color: var(--yasgui-bg-tertiary, #e0e0e0);
+          }
+        }
+      }
+    }
+  }
 }
