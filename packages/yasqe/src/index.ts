@@ -56,6 +56,7 @@ export class Yasqe extends CodeMirror {
   private fullscreenBtn: HTMLButtonElement | undefined;
   private isFullscreen: boolean = false;
   private resizeWrapper?: HTMLDivElement;
+  private snippetsBar?: HTMLDivElement;
   public rootEl: HTMLDivElement;
   public storage: YStorage;
   public config: Config;
@@ -80,6 +81,7 @@ export class Yasqe extends CodeMirror {
     //Do some post processing
     this.storage = new YStorage(Yasqe.storageNamespace);
     this.drawButtons();
+    this.drawSnippetsBar();
     const storageId = this.getStorageId();
     // this.getWrapperElement
     if (storageId) {
@@ -417,6 +419,154 @@ export class Yasqe extends CodeMirror {
   public getIsFullscreen() {
     return this.isFullscreen;
   }
+
+  private insertSnippet(code: string) {
+    const doc = this.getDoc();
+    const cursor = doc.getCursor();
+    doc.replaceRange(code, cursor);
+    // Move cursor to end of inserted code
+    const lines = code.split("\n");
+    const lastLine = lines[lines.length - 1];
+    doc.setCursor({
+      line: cursor.line + lines.length - 1,
+      ch: lines.length === 1 ? cursor.ch + lastLine.length : lastLine.length,
+    });
+    this.focus();
+  }
+
+  private drawSnippetsBar() {
+    // Check if snippets bar should be shown
+    const shouldShow =
+      this.config.showSnippetsBar &&
+      (this.persistentConfig?.showSnippetsBar === undefined || this.persistentConfig.showSnippetsBar) &&
+      this.config.snippets.length > 0;
+
+    if (!shouldShow) {
+      // Remove existing bar if present
+      if (this.snippetsBar) {
+        this.snippetsBar.remove();
+        this.snippetsBar = undefined;
+      }
+      return;
+    }
+
+    // Create snippets bar if it doesn't exist
+    if (!this.snippetsBar) {
+      this.snippetsBar = document.createElement("div");
+      addClass(this.snippetsBar, "yasqe_snippetsBar");
+      this.getWrapperElement().appendChild(this.snippetsBar);
+    }
+
+    // Clear existing content
+    this.snippetsBar.innerHTML = "";
+
+    const snippets = this.config.snippets;
+
+    // If 10 or fewer snippets, show all as buttons
+    if (snippets.length <= 10) {
+      snippets.forEach((snippet) => {
+        const btn = document.createElement("button");
+        addClass(btn, "yasqe_snippetButton");
+        btn.textContent = snippet.label;
+        btn.title = snippet.code;
+        btn.setAttribute("aria-label", `Insert ${snippet.label} snippet`);
+        btn.onclick = () => this.insertSnippet(snippet.code);
+        this.snippetsBar!.appendChild(btn);
+      });
+    } else {
+      // Group snippets by group property
+      const grouped: { [group: string]: Snippet[] } = {};
+      const ungrouped: Snippet[] = [];
+
+      snippets.forEach((snippet) => {
+        if (snippet.group) {
+          if (!grouped[snippet.group]) grouped[snippet.group] = [];
+          grouped[snippet.group].push(snippet);
+        } else {
+          ungrouped.push(snippet);
+        }
+      });
+
+      // Create dropdown for each group
+      Object.keys(grouped).forEach((groupName) => {
+        const dropdown = document.createElement("div");
+        addClass(dropdown, "yasqe_snippetDropdown");
+
+        const dropdownBtn = document.createElement("button");
+        addClass(dropdownBtn, "yasqe_snippetDropdownButton");
+        dropdownBtn.innerHTML = groupName + " ";
+        const chevron = drawSvgStringAsElement(imgs.chevronDown);
+        addClass(chevron, "chevronIcon");
+        dropdownBtn.appendChild(chevron);
+        dropdownBtn.setAttribute("aria-label", `${groupName} snippets`);
+        dropdownBtn.setAttribute("aria-expanded", "false");
+
+        const dropdownContent = document.createElement("div");
+        addClass(dropdownContent, "yasqe_snippetDropdownContent");
+        dropdownContent.setAttribute("role", "menu");
+
+        grouped[groupName].forEach((snippet) => {
+          const item = document.createElement("button");
+          addClass(item, "yasqe_snippetDropdownItem");
+          item.textContent = snippet.label;
+          item.title = snippet.code;
+          item.setAttribute("role", "menuitem");
+          item.onclick = () => {
+            this.insertSnippet(snippet.code);
+            dropdownContent.style.display = "none";
+            dropdownBtn.setAttribute("aria-expanded", "false");
+          };
+          dropdownContent.appendChild(item);
+        });
+
+        dropdownBtn.onclick = (e) => {
+          e.stopPropagation();
+          const isOpen = dropdownContent.style.display === "block";
+          // Close all other dropdowns
+          const allDropdowns = this.snippetsBar!.querySelectorAll(".yasqe_snippetDropdownContent");
+          allDropdowns.forEach((dd) => {
+            (dd as HTMLElement).style.display = "none";
+          });
+          const allButtons = this.snippetsBar!.querySelectorAll(".yasqe_snippetDropdownButton");
+          allButtons.forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+
+          // Toggle this dropdown
+          if (!isOpen) {
+            dropdownContent.style.display = "block";
+            dropdownBtn.setAttribute("aria-expanded", "true");
+          }
+        };
+
+        dropdown.appendChild(dropdownBtn);
+        dropdown.appendChild(dropdownContent);
+        this.snippetsBar!.appendChild(dropdown);
+      });
+
+      // Add ungrouped snippets as individual buttons
+      ungrouped.forEach((snippet) => {
+        const btn = document.createElement("button");
+        addClass(btn, "yasqe_snippetButton");
+        btn.textContent = snippet.label;
+        btn.title = snippet.code;
+        btn.setAttribute("aria-label", `Insert ${snippet.label} snippet`);
+        btn.onclick = () => this.insertSnippet(snippet.code);
+        this.snippetsBar!.appendChild(btn);
+      });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener("click", (e) => {
+      if (this.snippetsBar && !this.snippetsBar.contains(e.target as Node)) {
+        const allDropdowns = this.snippetsBar.querySelectorAll(".yasqe_snippetDropdownContent");
+        allDropdowns.forEach((dd) => {
+          (dd as HTMLElement).style.display = "none";
+        });
+        const allButtons = this.snippetsBar.querySelectorAll(".yasqe_snippetDropdownButton");
+        allButtons.forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+      }
+    });
+  }
+
   private drawResizer() {
     if (this.resizeWrapper) return;
     this.resizeWrapper = document.createElement("div");
@@ -955,6 +1105,31 @@ export class Yasqe extends CodeMirror {
   }
 
   /**
+   * Snippets management
+   */
+  public setSnippetsBarVisible(visible: boolean) {
+    if (!this.persistentConfig) {
+      this.persistentConfig = {
+        query: this.getValue(),
+        editorHeight: this.config.editorHeight,
+        showSnippetsBar: visible,
+      };
+    } else {
+      this.persistentConfig.showSnippetsBar = visible;
+    }
+    this.saveQuery();
+    this.drawSnippetsBar();
+  }
+
+  public getSnippetsBarVisible(): boolean {
+    return (
+      this.config.showSnippetsBar &&
+      (this.persistentConfig?.showSnippetsBar === undefined || this.persistentConfig.showSnippetsBar) &&
+      this.config.snippets.length > 0
+    );
+  }
+
+  /**
    * Autocompleter management
    */
   public enableCompleter(name: string): Promise<void> {
@@ -1184,6 +1359,12 @@ export type PlainRequestConfig = {
 export type PartialConfig = {
   [P in keyof Config]?: Config[P] extends object ? Partial<Config[P]> : Config[P];
 };
+
+export interface Snippet {
+  label: string;
+  code: string;
+  group?: string;
+}
 export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   mode: string;
   collapsePrefixesOnLoad: boolean;
@@ -1223,12 +1404,15 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   prefixCcApi: string; // the suggested default prefixes URL API getter
   showFormatButton: boolean; // Show a button to format the query
   checkConstructVariables: boolean; // Check for undefined variables in CONSTRUCT queries
+  snippets: Snippet[]; // Code snippets to show in the snippets bar
+  showSnippetsBar: boolean; // Show the snippets bar
 }
 export interface PersistentConfig {
   query: string;
   editorHeight: string;
   formatterType?: "sparql-formatter" | "legacy"; // Which formatter to use
   autoformatOnQuery?: boolean; // Auto-format query on execution
+  showSnippetsBar?: boolean; // User preference for snippets bar visibility
 }
 // export var _Yasqe = _Yasqe;
 

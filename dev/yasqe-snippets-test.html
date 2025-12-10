@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0px;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <title>Yasqe - Snippets Test</title>
+</head>
+<body>
+  <h2>Test with 5 snippets (no dropdown)</h2>
+  <div id="yasqe1"></div>
+
+  <h2 style="margin-top: 50px;">Test with 12 snippets (dropdowns)</h2>
+  <div id="yasqe2"></div>
+
+  <script type="module">
+    import Yasqe from '../packages/yasqe/src/index.ts';
+    
+    window.onload = function () {
+      // Test 1: 5 snippets (default)
+      window.yasqe1 = new Yasqe(document.getElementById("yasqe1"), {
+        requestConfig: {
+          endpoint: "https://dbpedia.org/sparql",
+        },
+        value: "SELECT * WHERE {\n  ?s ?p ?o .\n} LIMIT 10"
+      });
+
+      // Test 2: 12 snippets with groups (should show dropdowns)
+      window.yasqe2 = new Yasqe(document.getElementById("yasqe2"), {
+        requestConfig: {
+          endpoint: "https://dbpedia.org/sparql",
+        },
+        snippets: [
+          { label: "SELECT", code: "SELECT * WHERE {\n  ?s ?p ?o .\n} LIMIT 10", group: "Query Types" },
+          { label: "CONSTRUCT", code: "CONSTRUCT {\n  ?s ?p ?o .\n} WHERE {\n  ?s ?p ?o .\n} LIMIT 10", group: "Query Types" },
+          { label: "ASK", code: "ASK {\n  ?s ?p ?o .\n}", group: "Query Types" },
+          { label: "DESCRIBE", code: "DESCRIBE ?s", group: "Query Types" },
+          { label: "FILTER", code: "FILTER (?var > 100)", group: "Patterns" },
+          { label: "OPTIONAL", code: "OPTIONAL {\n  ?s ?p ?o .\n}", group: "Patterns" },
+          { label: "UNION", code: "{ ?s ?p ?o . } UNION { ?s ?p2 ?o2 . }", group: "Patterns" },
+          { label: "BIND", code: "BIND(?var AS ?newVar)", group: "Patterns" },
+          { label: "VALUES", code: "VALUES ?var { val1 val2 }", group: "Patterns" },
+          { label: "ORDER BY", code: "ORDER BY ?var", group: "Modifiers" },
+          { label: "LIMIT", code: "LIMIT 10", group: "Modifiers" },
+          { label: "OFFSET", code: "OFFSET 10", group: "Modifiers" }
+        ],
+        value: "SELECT * WHERE {\n  ?s ?p ?o .\n} LIMIT 10"
+      });
+    };
+  </script>
+</body>
+</html>
