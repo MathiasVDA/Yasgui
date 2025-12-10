@@ -745,4 +745,83 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       });
     });
   });
+
+  describe("CONSTRUCT Variable Validation", function () {
+    it("Should show warning for undefined variables in CONSTRUCT", async function () {
+      await page.evaluate(() => {
+        const constructQuery = `PREFIX ex: <http://example.org/>
+CONSTRUCT {
+  ?s ex:hasName ?name .
+  ?s ex:hasAge ?age .
+}
+WHERE {
+  ?s ex:name ?name .
+}`;
+        window.yasqe.setValue(constructQuery);
+      });
+
+      const result = await page.evaluate(() => {
+        const lastLine = window.yasqe.getDoc().lastLine();
+        const token = window.yasqe.getTokenAt(
+          { line: lastLine, ch: window.yasqe.getDoc().getLine(lastLine).length },
+          true,
+        );
+        const warnings = document.querySelectorAll(".constructVariableWarning");
+        return {
+          queryType: token.state.queryType,
+          constructVars: Object.keys(token.state.constructVariables || {}),
+          whereVars: Object.keys(token.state.whereVariables || {}),
+          warningCount: warnings.length,
+        };
+      });
+
+      expect(result.queryType).to.equal("CONSTRUCT");
+      expect(result.constructVars).to.include("?age");
+      expect(result.whereVars).to.not.include("?age");
+      expect(result.warningCount).to.be.greaterThan(0);
+    });
+
+    it("Should not show warnings for valid CONSTRUCT queries", async function () {
+      await page.evaluate(() => {
+        const validConstructQuery = `PREFIX ex: <http://example.org/>
+CONSTRUCT {
+  ?s ex:hasName ?name .
+}
+WHERE {
+  ?s ex:name ?name .
+}`;
+        window.yasqe.setValue(validConstructQuery);
+      });
+
+      const warningCount = await page.evaluate(() => {
+        return document.querySelectorAll(".constructVariableWarning").length;
+      });
+
+      expect(warningCount).to.equal(0);
+    });
+
+    it("Should allow disabling CONSTRUCT variable checking", async function () {
+      await page.evaluate(() => {
+        const constructQuery = `PREFIX ex: <http://example.org/>
+CONSTRUCT {
+  ?s ex:hasAge ?age .
+}
+WHERE {
+  ?s ex:name ?name .
+}`;
+        window.yasqe.setValue(constructQuery);
+        window.yasqe.setCheckConstructVariables(false);
+      });
+
+      const result = await page.evaluate(() => {
+        return {
+          warningCount: document.querySelectorAll(".constructVariableWarning").length,
+          checkEnabled: window.yasqe.config.checkConstructVariables,
+        };
+      });
+
+      expect(result.checkEnabled).to.be.false;
+      expect(result.warningCount).to.equal(0);
+    });
+  });
 });
