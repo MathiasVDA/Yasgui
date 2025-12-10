@@ -213,3 +213,19 @@ Before submitting changes:
 - Pre-commit hooks auto-format staged files
 - Use `dev/*.html` files to test changes interactively
 - The `build-templates/` directory contains HTML files copied to build output for testing built packages
+
+## Commit messages
+
+- Use conventional commits (feat:, fix:, docs:, style:, refactor:, test:, chore:)
+
+## Documentation
+
+- Update docs in `docs/` as needed
+
+## Screenshots
+
+- Include screenshots in pull request communication when UI changes are made
+
+## Run tests
+
+- Ensure tests pass locally before pushing changes
