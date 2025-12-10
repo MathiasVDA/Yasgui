@@ -49,6 +49,18 @@
     }
   }
 
+  .constructVariableWarning {
+    width: 13px;
+    height: 13px;
+    margin-top: 2px;
+    margin-left: 2px;
+    svg {
+      g {
+        fill: orange;
+      }
+    }
+  }
+
   .yasqe_tooltip {
     background: #333;
     background: rgba(0, 0, 0, 0.8);
