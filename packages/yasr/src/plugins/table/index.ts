@@ -28,7 +28,7 @@ export interface PluginConfig {
 export interface PersistentConfig {
   pageSize?: number;
   compact?: boolean;
-  isEllipsed?: boolean;
+  isCompactView?: boolean;
   showUriPrefixes?: boolean;
   showDatatypes?: boolean;
 }
@@ -50,7 +50,7 @@ export default class Table implements Plugin<PluginConfig> {
   private tableFilterField: HTMLInputElement | undefined;
   private tableSizeField: HTMLSelectElement | undefined;
   private tableCompactSwitch: HTMLInputElement | undefined;
-  private tableEllipseSwitch: HTMLInputElement | undefined;
+  private tableCompactViewSwitch: HTMLInputElement | undefined;
   private tableUriPrefixSwitch: HTMLInputElement | undefined;
   private tableDatatypeSwitch: HTMLInputElement | undefined;
   private tableResizer:
@@ -259,15 +259,15 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableResizer = new ColumnResizer(this.tableEl, {
       widths: this.persistentConfig.compact === true ? widths : [this.getSizeFirstColumn(), ...widths.slice(1)],
       partialRefresh: true,
-      onResize: this.persistentConfig.isEllipsed !== false && this.setEllipsisHandlers,
+      onResize: this.persistentConfig.isCompactView !== false && this.setEllipsisHandlers,
       headerOnly: true,
     });
     // DataTables uses the rendered style to decide the widths of columns.
-    // Before a draw remove the ellipseTable styling
-    if (this.persistentConfig.isEllipsed !== false) {
+    // Before a draw remove the compactTable styling
+    if (this.persistentConfig.isCompactView !== false) {
       this.dataTable?.on("preDraw", () => {
         this.tableResizer?.reset({ disable: true });
-        removeClass(this.tableEl, "ellipseTable");
+        removeClass(this.tableEl, "compactTable");
         this.tableEl?.style.removeProperty("width");
         this.tableEl?.style.setProperty("width", this.tableEl.clientWidth + "px");
         return true; // Indicate it should re-render
@@ -288,8 +288,8 @@ export default class Table implements Plugin<PluginConfig> {
           onResize: this.setEllipsisHandlers,
           headerOnly: true,
         });
-        // Re-add the ellipsis
-        addClass(this.tableEl, "ellipseTable");
+        // Re-add the compact styling
+        addClass(this.tableEl, "compactTable");
         // Check if cells need the ellipsisHandlers
         this.setEllipsisHandlers();
       });
@@ -297,8 +297,8 @@ export default class Table implements Plugin<PluginConfig> {
 
     this.drawControls();
     // Draw again but with the events
-    if (this.persistentConfig.isEllipsed !== false) {
-      addClass(this.tableEl, "ellipseTable");
+    if (this.persistentConfig.isCompactView !== false) {
+      addClass(this.tableEl, "compactTable");
       this.setEllipsisHandlers();
     }
     // if (this.tableEl.clientWidth > width) this.tableEl.parentElement?.style.setProperty("overflow", "hidden");
@@ -343,9 +343,9 @@ export default class Table implements Plugin<PluginConfig> {
     this.draw(this.persistentConfig);
     this.yasr.storePluginConfig("table", this.persistentConfig);
   };
-  private handleSetEllipsisToggle = (event: Event) => {
+  private handleSetCompactViewToggle = (event: Event) => {
     // Store in persistentConfig
-    this.persistentConfig.isEllipsed = (event.target as HTMLInputElement).checked;
+    this.persistentConfig.isCompactView = (event.target as HTMLInputElement).checked;
     // Update the table
     this.draw(this.persistentConfig);
     this.yasr.storePluginConfig("table", this.persistentConfig);
@@ -408,21 +408,21 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableCompactSwitch.defaultChecked = !!this.persistentConfig.compact;
     this.tableControls.appendChild(toggleWrapper);
 
-    // Ellipsis switch
-    const ellipseToggleWrapper = document.createElement("div");
-    const ellipseSwitchComponent = document.createElement("label");
-    const ellipseTextComponent = document.createElement("span");
-    ellipseTextComponent.innerText = "Ellipse";
-    addClass(ellipseTextComponent, "label");
-    ellipseSwitchComponent.appendChild(ellipseTextComponent);
-    addClass(ellipseSwitchComponent, "switch");
-    ellipseToggleWrapper.appendChild(ellipseSwitchComponent);
-    this.tableEllipseSwitch = document.createElement("input");
-    ellipseSwitchComponent.addEventListener("change", this.handleSetEllipsisToggle);
-    this.tableEllipseSwitch.type = "checkbox";
-    ellipseSwitchComponent.appendChild(this.tableEllipseSwitch);
-    this.tableEllipseSwitch.defaultChecked = this.persistentConfig.isEllipsed !== false;
-    this.tableControls.appendChild(ellipseToggleWrapper);
+    // Compact view switch
+    const compactViewToggleWrapper = document.createElement("div");
+    const compactViewSwitchComponent = document.createElement("label");
+    const compactViewTextComponent = document.createElement("span");
+    compactViewTextComponent.innerText = "Compact";
+    addClass(compactViewTextComponent, "label");
+    compactViewSwitchComponent.appendChild(compactViewTextComponent);
+    addClass(compactViewSwitchComponent, "switch");
+    compactViewToggleWrapper.appendChild(compactViewSwitchComponent);
+    this.tableCompactViewSwitch = document.createElement("input");
+    compactViewSwitchComponent.addEventListener("change", this.handleSetCompactViewToggle);
+    this.tableCompactViewSwitch.type = "checkbox";
+    compactViewSwitchComponent.appendChild(this.tableCompactViewSwitch);
+    this.tableCompactViewSwitch.defaultChecked = this.persistentConfig.isCompactView !== false;
+    this.tableControls.appendChild(compactViewToggleWrapper);
 
     // URI Prefix switch
     const uriPrefixToggleWrapper = document.createElement("div");
@@ -522,8 +522,8 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableSizeField = undefined;
     this.tableCompactSwitch?.removeEventListener("change", this.handleSetCompactToggle);
     this.tableCompactSwitch = undefined;
-    this.tableEllipseSwitch?.removeEventListener("change", this.handleSetEllipsisToggle);
-    this.tableEllipseSwitch = undefined;
+    this.tableCompactViewSwitch?.removeEventListener("change", this.handleSetCompactViewToggle);
+    this.tableCompactViewSwitch = undefined;
     this.tableUriPrefixSwitch?.removeEventListener("change", this.handleSetUriPrefixToggle);
     this.tableUriPrefixSwitch = undefined;
     this.tableDatatypeSwitch?.removeEventListener("change", this.handleSetDatatypeToggle);

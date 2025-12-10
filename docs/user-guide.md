@@ -531,13 +531,13 @@ Displays SELECT query results in an interactive table.
 - **Export**: Download results as CSV or copy as Markdown
 - **Customizable Display**:
   - **Simple View**: Toggle compact mode for cleaner display
-  - **Ellipse**: Toggle text ellipsis for long values
+  - **Compact**: Toggle text ellipsis for long values (truncates with "...")
   - **Prefixes**: Show/hide URI prefixes (enabled by default)
   - **Datatypes**: Show/hide datatype annotations on literals (enabled by default)
 
 **Controls:**
 - **Simple view**: Enables compact mode without datatypes and URI brackets
-- **Ellipse**: When enabled, long cell values are truncated with "..." and can be expanded by clicking
+- **Compact**: When enabled, long cell values are truncated with "..." and can be expanded by clicking
 - **Prefixes**: When enabled, URIs are displayed with namespace prefixes (e.g., `foaf:name` instead of full URI)
 - **Datatypes**: When enabled, literals show their datatype (e.g., `"42"^^xsd:integer`)
 - **Filter**: Text field to filter rows across all columns
