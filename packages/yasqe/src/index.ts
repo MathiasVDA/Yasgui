@@ -57,6 +57,7 @@ export class Yasqe extends CodeMirror {
   private isFullscreen: boolean = false;
   private resizeWrapper?: HTMLDivElement;
   private snippetsBar?: HTMLDivElement;
+  private snippetsClickHandler?: (e: MouseEvent) => void;
   public rootEl: HTMLDivElement;
   public storage: YStorage;
   public config: Config;
@@ -494,7 +495,7 @@ export class Yasqe extends CodeMirror {
 
         const dropdownBtn = document.createElement("button");
         addClass(dropdownBtn, "yasqe_snippetDropdownButton");
-        dropdownBtn.innerHTML = groupName + " ";
+        dropdownBtn.textContent = groupName + " ";
         const chevron = drawSvgStringAsElement(imgs.chevronDown);
         addClass(chevron, "chevronIcon");
         dropdownBtn.appendChild(chevron);
@@ -554,8 +555,14 @@ export class Yasqe extends CodeMirror {
       });
     }
 
-    // Close dropdowns when clicking outside
-    document.addEventListener("click", (e) => {
+    // Set up click handler for closing dropdowns when clicking outside
+    // Remove any existing handler first
+    if (this.snippetsClickHandler) {
+      document.removeEventListener("click", this.snippetsClickHandler);
+    }
+
+    // Create and store the handler
+    this.snippetsClickHandler = (e: MouseEvent) => {
       if (this.snippetsBar && !this.snippetsBar.contains(e.target as Node)) {
         const allDropdowns = this.snippetsBar.querySelectorAll(".yasqe_snippetDropdownContent");
         allDropdowns.forEach((dd) => {
@@ -564,7 +571,10 @@ export class Yasqe extends CodeMirror {
         const allButtons = this.snippetsBar.querySelectorAll(".yasqe_snippetDropdownButton");
         allButtons.forEach((btn) => btn.setAttribute("aria-expanded", "false"));
       }
-    });
+    };
+
+    // Add the handler
+    document.addEventListener("click", this.snippetsClickHandler);
   }
 
   private drawResizer() {
@@ -1244,6 +1254,10 @@ export class Yasqe extends CodeMirror {
     this.unregisterEventListeners();
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
     this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
+    if (this.snippetsClickHandler) {
+      document.removeEventListener("click", this.snippetsClickHandler);
+      this.snippetsClickHandler = undefined;
+    }
     for (const autocompleter in this.autocompleters) {
       this.disableCompleter(autocompleter);
     }
