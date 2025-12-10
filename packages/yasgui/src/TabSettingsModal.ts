@@ -572,10 +572,10 @@ export default class TabSettingsModal {
     // If we didn't find a non-PREFIX line, all lines are PREFIX or empty
     if (firstNonPrefixLine === 0 && lines.length > 0) {
       // Check if there's any content at all
-      const hasContent = lines.some((line) => line.trim().length > 0);
+      const hasContent = lines.some((line: string) => line.trim().length > 0);
       if (
         !hasContent ||
-        lines.every((line) => line.trim().length === 0 || line.trim().toUpperCase().startsWith("PREFIX"))
+        lines.every((line: string) => line.trim().length === 0 || line.trim().toUpperCase().startsWith("PREFIX"))
       ) {
         firstNonPrefixLine = lines.length;
       }
@@ -755,7 +755,7 @@ export default class TabSettingsModal {
     addClass(copyButton, "secondaryButton");
     copyButton.onclick = async () => {
       try {
-        const config = this.tab.yasgui.persistentConfig["persistedJson"];
+        const config = this.tab.yasgui.persistentConfig.getPersistedConfig();
         await ConfigExportImport.copyConfigToClipboard(config);
         this.showNotification("Configuration copied to clipboard!", "success");
       } catch (error) {
@@ -769,7 +769,7 @@ export default class TabSettingsModal {
     addClass(downloadButton, "primaryButton");
     downloadButton.onclick = () => {
       try {
-        const config = this.tab.yasgui.persistentConfig["persistedJson"];
+        const config = this.tab.yasgui.persistentConfig.getPersistedConfig();
         ConfigExportImport.downloadConfigAsFile(config);
         this.showNotification("Configuration downloaded!", "success");
       } catch (error) {
@@ -895,30 +895,8 @@ export default class TabSettingsModal {
         return;
       }
 
-      // Merge the parsed config with existing config
-      const currentConfig = this.tab.yasgui.persistentConfig["persistedJson"];
-
-      // Update the configuration
-      if (parsedConfig.endpointHistory) {
-        currentConfig.endpointHistory = parsedConfig.endpointHistory;
-      }
-      if (parsedConfig.prefixes !== undefined) {
-        currentConfig.prefixes = parsedConfig.prefixes;
-      }
-      if (parsedConfig.autoCaptureEnabled !== undefined) {
-        currentConfig.autoCaptureEnabled = parsedConfig.autoCaptureEnabled;
-      }
-      if (parsedConfig.customEndpointButtons) {
-        currentConfig.customEndpointButtons = parsedConfig.customEndpointButtons;
-      }
-      if (parsedConfig.tabs && parsedConfig.tabConfig) {
-        currentConfig.tabs = parsedConfig.tabs;
-        currentConfig.tabConfig = parsedConfig.tabConfig;
-        currentConfig.active = parsedConfig.active;
-      }
-
-      // Save to storage
-      this.tab.yasgui.persistentConfig["toStorage"]();
+      // Update the configuration using the public API
+      this.tab.yasgui.persistentConfig.updatePersistedConfig(parsedConfig);
 
       this.showNotification("Configuration imported successfully! Reload the page to see changes.", "success");
     } catch (error) {

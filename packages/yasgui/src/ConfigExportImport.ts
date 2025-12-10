@@ -158,7 +158,13 @@ function unescapeTurtleString(str: string): string {
 
 /**
  * Parse Turtle format back to configuration
- * This is a simplified parser focused on the structure we generate
+ * This is a simplified parser focused on the structure we generate.
+ *
+ * Note: This parser is designed to handle the specific Turtle format
+ * produced by serializeToTurtle(). For production use with arbitrary
+ * Turtle input, consider using a robust RDF library like N3.js.
+ * The current implementation uses regex patterns that work well for
+ * our serialization output but may not handle all valid Turtle syntax.
  */
 export function parseFromTurtle(turtle: string): Partial<PersistedJson> {
   const config: Partial<PersistedJson> = {
