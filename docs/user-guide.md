@@ -346,7 +346,7 @@ Backup, share, and migrate your YASGUI configuration using RDF Turtle format. Th
 **Configuration Ontology:**
 
 YASGUI uses a custom RDF ontology to represent configuration:
-- Namespace: `http://yasgui.org/ontology#`
+- Namespace: `https://yasgui.matdata.eu/ontology#`
 - Classes: `Configuration`, `Tab`
 - Properties: `activeTab`, `prefixes`, `endpoint`, `query`, `tabName`, etc.
 
@@ -378,7 +378,7 @@ YASGUI uses a custom RDF ontology to represent configuration:
 
 **Example Configuration (RDF Turtle):**
 ```turtle
-@prefix yasgui: <http://yasgui.org/ontology#> .
+@prefix yasgui: <https://yasgui.matdata.eu/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 [] a yasgui:Configuration ;

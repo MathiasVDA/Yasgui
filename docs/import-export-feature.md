@@ -33,7 +33,7 @@ The configuration includes:
 
 ### RDF Ontology
 
-The feature defines a custom RDF vocabulary at `http://yasgui.org/ontology#`:
+The feature defines a custom RDF vocabulary at `https://yasgui.matdata.eu/ontology#`:
 
 #### Classes
 
@@ -60,7 +60,7 @@ The feature defines a custom RDF vocabulary at `http://yasgui.org/ontology#`:
 ### File Format Example
 
 ```turtle
-@prefix yasgui: <http://yasgui.org/ontology#> .
+@prefix yasgui: <https://yasgui.matdata.eu/ontology#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 

@@ -6,10 +6,15 @@
 import { PersistedJson } from "./PersistentConfig";
 
 // YASGUI Configuration Ontology
-export const YASGUI_NS = "http://yasgui.org/ontology#";
+export const YASGUI_NS = "https://yasgui.matdata.eu/ontology#";
 export const RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 export const RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";
 export const XSD_NS = "http://www.w3.org/2001/XMLSchema#";
+export const DCTERMS_NS = "http://purl.org/dc/terms/";
+export const SD_NS = "http://www.w3.org/ns/sparql-service-description#";
+export const SP_NS = "http://spinrdf.org/sp#";
+export const HTTP_NS = "http://www.w3.org/2011/http#";
+export const SCHEMA_NS = "https://schema.org/";
 
 /**
  * Serialize configuration to Turtle format
@@ -22,10 +27,17 @@ export function serializeToTurtle(config: PersistedJson): string {
   lines.push(`@prefix rdf: <${RDF_NS}> .`);
   lines.push(`@prefix rdfs: <${RDFS_NS}> .`);
   lines.push(`@prefix xsd: <${XSD_NS}> .`);
+  lines.push(`@prefix dcterms: <${DCTERMS_NS}> .`);
+  lines.push(`@prefix sd: <${SD_NS}> .`);
+  lines.push(`@prefix sp: <${SP_NS}> .`);
+  lines.push(`@prefix http: <${HTTP_NS}> .`);
+  lines.push(`@prefix schema: <${SCHEMA_NS}> .`);
   lines.push("");
 
   // Main configuration node
+  const now = new Date().toISOString();
   lines.push(`[] a yasgui:Configuration ;`);
+  lines.push(`  dcterms:created "${now}"^^xsd:dateTime ;`);
 
   // Endpoint history
   if (config.endpointHistory && config.endpointHistory.length > 0) {
@@ -43,7 +55,7 @@ export function serializeToTurtle(config: PersistedJson): string {
 
   // Prefixes
   if (config.prefixes) {
-    lines.push(`  yasgui:prefixes """${escapeTurtleString(config.prefixes)}""" ;`);
+    lines.push(`  yasgui:prefixesValue """${escapeTurtleString(config.prefixes)}""" ;`);
   }
 
   // Auto capture enabled
@@ -56,8 +68,8 @@ export function serializeToTurtle(config: PersistedJson): string {
     lines.push(`  yasgui:customEndpointButton [`);
     config.customEndpointButtons.forEach((button, index) => {
       const isLast = index === config.customEndpointButtons!.length - 1;
-      lines.push(`    yasgui:label "${escapeTurtleString(button.label)}" ;`);
-      lines.push(`    yasgui:endpoint "${escapeTurtleString(button.endpoint)}"${isLast ? "" : " ;"}`);
+      lines.push(`    rdfs:label "${escapeTurtleString(button.label)}" ;`);
+      lines.push(`    sd:endpoint "${escapeTurtleString(button.endpoint)}"${isLast ? "" : " ;"}`);
       if (!isLast) {
         lines.push(`  ] , [`);
       }
@@ -72,33 +84,39 @@ export function serializeToTurtle(config: PersistedJson): string {
       const tabConfig = config.tabConfig[tabId];
       const isLastTab = tabIndex === config.tabs.length - 1;
 
-      lines.push(`    yasgui:tabId "${escapeTurtleString(tabId)}" ;`);
-      lines.push(`    yasgui:tabName "${escapeTurtleString(tabConfig.name)}" ;`);
+      lines.push(`    dcterms:identifier "${escapeTurtleString(tabId)}" ;`);
+      lines.push(`    rdfs:label "${escapeTurtleString(tabConfig.name)}" ;`);
 
       // Query
       if (tabConfig.yasqe?.value) {
-        lines.push(`    yasgui:query """${escapeTurtleString(tabConfig.yasqe.value)}""" ;`);
+        lines.push(`    sp:text """${escapeTurtleString(tabConfig.yasqe.value)}""" ;`);
       }
 
       // Editor height
       if (tabConfig.yasqe?.editorHeight) {
-        lines.push(`    yasgui:editorHeight "${escapeTurtleString(tabConfig.yasqe.editorHeight)}" ;`);
+        lines.push(`    schema:height "${escapeTurtleString(tabConfig.yasqe.editorHeight)}" ;`);
       }
 
       // Request config
       if (tabConfig.requestConfig) {
         const reqConfig = tabConfig.requestConfig;
         if (reqConfig.endpoint && typeof reqConfig.endpoint === "string") {
-          lines.push(`    yasgui:endpoint "${escapeTurtleString(reqConfig.endpoint)}" ;`);
+          lines.push(`    sd:endpoint "${escapeTurtleString(reqConfig.endpoint)}" ;`);
         }
         if (reqConfig.method && typeof reqConfig.method === "string") {
           lines.push(`    yasgui:requestMethod "${escapeTurtleString(reqConfig.method)}" ;`);
         }
         if (reqConfig.acceptHeaderSelect && typeof reqConfig.acceptHeaderSelect === "string") {
-          lines.push(`    yasgui:acceptHeaderSelect "${escapeTurtleString(reqConfig.acceptHeaderSelect)}" ;`);
+          lines.push(`    yasgui:acceptHeaderSelect [`);
+          lines.push(`      http:headerName "Accept" ;`);
+          lines.push(`      http:headerValue "${escapeTurtleString(reqConfig.acceptHeaderSelect)}"`);
+          lines.push(`    ] ;`);
         }
         if (reqConfig.acceptHeaderGraph && typeof reqConfig.acceptHeaderGraph === "string") {
-          lines.push(`    yasgui:acceptHeaderGraph "${escapeTurtleString(reqConfig.acceptHeaderGraph)}" ;`);
+          lines.push(`    yasgui:acceptHeaderGraph [`);
+          lines.push(`      http:headerName "Accept" ;`);
+          lines.push(`      http:headerValue "${escapeTurtleString(reqConfig.acceptHeaderGraph)}"`);
+          lines.push(`    ] ;`);
         }
       }
 
@@ -191,7 +209,7 @@ export function parseFromTurtle(turtle: string): Partial<PersistedJson> {
     }
 
     // Extract prefixes
-    const prefixesMatch = turtle.match(/yasgui:prefixes\s+"""([\s\S]*?)"""/);
+    const prefixesMatch = turtle.match(/yasgui:prefixesValue\s+"""([\s\S]*?)"""/);
     if (prefixesMatch) {
       config.prefixes = unescapeTurtleString(prefixesMatch[1]);
     }
@@ -204,7 +222,7 @@ export function parseFromTurtle(turtle: string): Partial<PersistedJson> {
 
     // Extract custom endpoint buttons
     const buttonPattern =
-      /yasgui:customEndpointButton\s+\[([\s\S]*?)yasgui:label\s+"([^"]*)"\s*;\s*yasgui:endpoint\s+"([^"]*)"/g;
+      /yasgui:customEndpointButton\s+\[([\s\S]*?)rdfs:label\s+"([^"]*)"\s*;\s*sd:endpoint\s+"([^"]*)"/g;
     let buttonMatch;
     while ((buttonMatch = buttonPattern.exec(turtle)) !== null) {
       config.customEndpointButtons!.push({
@@ -215,15 +233,15 @@ export function parseFromTurtle(turtle: string): Partial<PersistedJson> {
 
     // Extract tabs - simplified parsing
     const tabPattern =
-      /yasgui:tabId\s+"([^"]*)"\s*;\s*yasgui:tabName\s+"([^"]*)"\s*;[\s\S]*?(?=yasgui:tabId|yasgui:customEndpointButton|\]\.|\]\s*,\s*\[)/g;
+      /dcterms:identifier\s+"([^"]*)"\s*;\s*rdfs:label\s+"([^"]*)"\s*;[\s\S]*?(?=dcterms:identifier|yasgui:customEndpointButton|\]\.|\]\s*,\s*\[)/g;
     const tabBlocks = turtle.match(/yasgui:tab\s+\[([\s\S]*)\]\s*\./);
 
     if (tabBlocks) {
       const tabsContent = tabBlocks[1];
-      const tabIdMatches = [...tabsContent.matchAll(/yasgui:tabId\s+"([^"]*)"/g)];
-      const tabNameMatches = [...tabsContent.matchAll(/yasgui:tabName\s+"([^"]*)"/g)];
-      const queryMatches = [...tabsContent.matchAll(/yasgui:query\s+"""([\s\S]*?)"""/g)];
-      const endpointMatches = [...tabsContent.matchAll(/yasgui:endpoint\s+"([^"]*)"/g)];
+      const tabIdMatches = [...tabsContent.matchAll(/dcterms:identifier\s+"([^"]*)"/g)];
+      const tabNameMatches = [...tabsContent.matchAll(/rdfs:label\s+"([^"]*)"/g)];
+      const queryMatches = [...tabsContent.matchAll(/sp:text\s+"""([\s\S]*?)"""/g)];
+      const endpointMatches = [...tabsContent.matchAll(/sd:endpoint\s+"([^"]*)"/g)];
       const methodMatches = [...tabsContent.matchAll(/yasgui:requestMethod\s+"([^"]*)"/g)];
 
       tabIdMatches.forEach((match, index) => {
