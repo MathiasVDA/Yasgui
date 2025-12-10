@@ -335,6 +335,35 @@ export default class TabSettingsModal {
     autoformatSection.appendChild(autoformatCheckboxContainer);
     autoformatSection.appendChild(autoformatHelp);
     container.appendChild(autoformatSection);
+
+    // CONSTRUCT Variable Validation Section
+    const constructValidationSection = document.createElement("div");
+    addClass(constructValidationSection, "settingsSection");
+
+    const constructValidationCheckboxContainer = document.createElement("div");
+    addClass(constructValidationCheckboxContainer, "checkboxContainer");
+
+    const constructValidationCheckbox = document.createElement("input");
+    constructValidationCheckbox.type = "checkbox";
+    constructValidationCheckbox.id = "checkConstructVariables";
+    constructValidationCheckbox.checked = yasqe.config.checkConstructVariables ?? true;
+
+    const constructValidationLabel = document.createElement("label");
+    constructValidationLabel.htmlFor = "checkConstructVariables";
+    constructValidationLabel.textContent = "Validate CONSTRUCT query variables";
+
+    const constructValidationHelp = document.createElement("div");
+    constructValidationHelp.textContent =
+      "Show warnings for variables used in CONSTRUCT template but not defined in WHERE clause.";
+    addClass(constructValidationHelp, "settingsHelp");
+    constructValidationHelp.style.marginTop = "5px";
+
+    constructValidationCheckboxContainer.appendChild(constructValidationCheckbox);
+    constructValidationCheckboxContainer.appendChild(constructValidationLabel);
+
+    constructValidationSection.appendChild(constructValidationCheckboxContainer);
+    constructValidationSection.appendChild(constructValidationHelp);
+    container.appendChild(constructValidationSection);
   }
 
   private drawRequestSettings(container: HTMLElement) {
@@ -445,12 +474,16 @@ export default class TabSettingsModal {
     if (yasqe && yasqe.persistentConfig) {
       const formatterSelect = document.getElementById("formatterTypeSelect") as HTMLSelectElement;
       const autoformatCheckbox = document.getElementById("autoformatOnQuery") as HTMLInputElement;
+      const constructValidationCheckbox = document.getElementById("checkConstructVariables") as HTMLInputElement;
 
       if (formatterSelect) {
         yasqe.persistentConfig.formatterType = formatterSelect.value as "sparql-formatter" | "legacy";
       }
       if (autoformatCheckbox) {
         yasqe.persistentConfig.autoformatOnQuery = autoformatCheckbox.checked;
+      }
+      if (constructValidationCheckbox) {
+        yasqe.setCheckConstructVariables(constructValidationCheckbox.checked);
       }
       yasqe.saveQuery();
     }

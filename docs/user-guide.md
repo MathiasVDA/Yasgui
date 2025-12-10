@@ -218,6 +218,46 @@ Keep your SPARQL queries clean and readable with automatic formatting.
   - Enable/disable auto-format on query execution
   - Both settings are saved persistently
 
+### CONSTRUCT Query Validation
+
+YASGUI helps you write correct CONSTRUCT queries by detecting undefined variables.
+
+**Feature:**
+- Automatically checks if variables used in the CONSTRUCT template are defined in the WHERE clause
+- Shows orange warning markers in the gutter for undefined variables
+- Displays tooltips explaining which variable is undefined
+- Does not prevent query execution (informational only)
+
+**How It Works:**
+When you write a CONSTRUCT query, YASGUI analyzes the variables:
+```sparql
+PREFIX ex: <http://example.org/>
+CONSTRUCT {
+  ?s ex:hasName ?name .
+  ?s ex:hasAge ?age .      # ⚠️ Warning: ?age not defined in WHERE
+}
+WHERE {
+  ?s ex:name ?name .       # Only ?s and ?name are defined
+}
+```
+
+**Visual Feedback:**
+- **Orange warning icon**: Appears in the gutter next to lines with undefined variables
+- **Tooltip**: Hover over the warning icon to see which variable is undefined
+- **Non-blocking**: Queries can still be executed even with warnings
+
+**Configuration:**
+- Open Settings (⚙ icon) → Editor tab
+- Toggle "Validate CONSTRUCT query variables" checkbox
+- Enabled by default
+- Setting is saved persistently
+
+**Why This Helps:**
+- Catch typos in variable names early
+- Ensure CONSTRUCT queries will produce expected results
+- Understand which variables are actually bound in your query
+- Improve query quality without blocking execution
+
 ### Fullscreen Mode
 
 Maximize screen space for editing or viewing results.
