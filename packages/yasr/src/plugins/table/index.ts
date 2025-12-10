@@ -367,19 +367,26 @@ export default class Table implements Plugin<PluginConfig> {
   private handleCopyMarkdown = async (event: Event) => {
     const markdown = this.getMarkdownTable();
     const button = event.target as HTMLButtonElement;
-    const originalText = button.textContent;
+
+    // Prevent multiple rapid clicks
+    if (button.disabled) return;
+    button.disabled = true;
+
+    const originalText = "Copy as Markdown";
     try {
       await navigator.clipboard.writeText(markdown);
       // Provide visual feedback
       button.textContent = "Copied!";
       setTimeout(() => {
         button.textContent = originalText;
+        button.disabled = false;
       }, 2000);
     } catch (err) {
       // Show user-friendly error
       button.textContent = "Copy failed";
       setTimeout(() => {
         button.textContent = originalText;
+        button.disabled = false;
       }, 2000);
     }
   };
