@@ -36,6 +36,9 @@ export interface State {
   lastPredicateOffset: number;
   currentPnameNs: string | undefined;
   possibleFullIri: boolean;
+  inConstructTemplate: boolean;
+  constructVariables: { [varName: string]: string };
+  whereVariables: { [varName: string]: string };
 }
 export interface Token {
   quotePos: "end" | "start" | "content" | undefined;
@@ -467,6 +470,12 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
         case "storeProperty":
           state.storeProperty = true;
           break;
+        case "constructTemplate":
+          state.inConstructTemplate = true;
+          break;
+        case "whereClause":
+          state.inConstructTemplate = false;
+          break;
       }
     }
 
@@ -517,7 +526,17 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
       // Incremental LL1 parse
       while (state.stack.length > 0 && tokenCat && state.OK && !finished) {
         topSymbol = state.stack.pop();
-        if (topSymbol === "var" && tokenOb.string) state.variables[tokenOb.string] = tokenOb.string;
+        if (topSymbol === "var" && tokenOb.string) {
+          state.variables[tokenOb.string] = tokenOb.string;
+          // Track variables separately for CONSTRUCT template validation
+          if (state.queryType === "CONSTRUCT") {
+            if (state.inConstructTemplate) {
+              state.constructVariables[tokenOb.string] = tokenOb.string;
+            } else {
+              state.whereVariables[tokenOb.string] = tokenOb.string;
+            }
+          }
+        }
         if (!ll1_table[topSymbol]) {
           // Top symbol is a terminal
           if (topSymbol == tokenCat) {
@@ -721,6 +740,9 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
         errorMsg: undefined,
         inPrefixDecl: false,
         possibleFullIri: false,
+        inConstructTemplate: false,
+        constructVariables: {},
+        whereVariables: {},
       };
     },
     indent: indent,

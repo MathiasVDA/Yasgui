@@ -27,7 +27,7 @@ SELECT * WHERE {
       rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
     },
     collapsePrefixesOnLoad: false,
-    gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+    gutters: ["gutterErrorBar", "gutterConstructWarning", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
     matchBrackets: true,
     fixedGutter: true,
     syntaxErrorCheck: true,
@@ -131,6 +131,7 @@ SELECT * WHERE {
     queryingDisabled: undefined,
     prefixCcApi: prefixCcApi,
     showFormatButton: true,
+    checkConstructVariables: true,
   };
   const requestConfig: PlainRequestConfig = {
     queryArgument: undefined, //undefined means: get query argument based on query mode

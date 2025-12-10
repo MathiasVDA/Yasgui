@@ -117,6 +117,7 @@ export class Yasqe extends CodeMirror {
       window.addEventListener("hashchange", this.handleHashChange);
     }
     this.checkSyntax();
+    this.checkConstructVariables();
     // Size codemirror to the
     if (this.persistentConfig && this.persistentConfig.editorHeight) {
       this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
@@ -133,6 +134,7 @@ export class Yasqe extends CodeMirror {
   };
   private handleChange() {
     this.checkSyntax();
+    this.checkConstructVariables();
     this.updateQueryButton();
   }
   private handleBlur() {
@@ -141,6 +143,7 @@ export class Yasqe extends CodeMirror {
   private handleChanges() {
     // e.g. handle blur
     this.checkSyntax();
+    this.checkConstructVariables();
     this.updateQueryButton();
   }
   private handleCursorActivity() {
@@ -770,6 +773,7 @@ export class Yasqe extends CodeMirror {
   public setCheckSyntaxErrors(isEnabled: boolean) {
     this.config.syntaxErrorCheck = isEnabled;
     this.checkSyntax();
+    this.checkConstructVariables();
   }
   public checkSyntax() {
     this.queryValid = true;
@@ -826,6 +830,69 @@ export class Yasqe extends CodeMirror {
       }
     }
   }
+
+  public setCheckConstructVariables(isEnabled: boolean) {
+    this.config.checkConstructVariables = isEnabled;
+    if (!isEnabled) {
+      // Clear any existing warnings when disabled
+      this.clearGutter("gutterConstructWarning");
+    } else {
+      this.checkConstructVariables();
+    }
+  }
+
+  public checkConstructVariables() {
+    // Only check if enabled, query is valid, and it's a CONSTRUCT query
+    if (!this.config.checkConstructVariables || !this.queryValid || this.getQueryType() !== "CONSTRUCT") {
+      return;
+    }
+
+    this.clearGutter("gutterConstructWarning");
+
+    // Get the final state after parsing the entire query
+    const lastLine = this.getDoc().lastLine();
+    const token: Token = this.getTokenAt({ line: lastLine, ch: this.getDoc().getLine(lastLine).length }, true);
+
+    const state = token.state as TokenizerState;
+
+    // Check for undefined variables in CONSTRUCT template
+    const undefinedVars: string[] = [];
+    for (const varName in state.constructVariables) {
+      if (!state.whereVariables[varName]) {
+        undefinedVars.push(varName);
+      }
+    }
+
+    if (undefinedVars.length === 0) {
+      return;
+    }
+
+    // Find lines where undefined variables are used in CONSTRUCT template
+    for (let l = 0; l < this.getDoc().lineCount(); ++l) {
+      const lineToken: Token = this.getTokenAt({ line: l, ch: this.getDoc().getLine(l).length }, true);
+      const lineState = lineToken.state as TokenizerState;
+
+      // Only mark variables in the CONSTRUCT template
+      if (lineState.queryType === "CONSTRUCT" && lineState.inConstructTemplate) {
+        const line = this.getDoc().getLine(l);
+        // Check if this line contains any undefined variable
+        for (const undefinedVar of undefinedVars) {
+          if (line.indexOf(undefinedVar) >= 0) {
+            const warningEl = drawSvgStringAsElement(imgs.warning);
+            warningEl.className = "constructVariableWarning";
+            tooltip(
+              this,
+              warningEl,
+              escape(`Variable ${undefinedVar} is used in CONSTRUCT but not defined in WHERE clause`),
+            );
+            this.setGutterMarker(l, "gutterConstructWarning", warningEl);
+            break; // Only one marker per line
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Token management
    */
@@ -1147,6 +1214,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   queryingDisabled: string | undefined; // The string will be the message displayed when hovered
   prefixCcApi: string; // the suggested default prefixes URL API getter
   showFormatButton: boolean; // Show a button to format the query
+  checkConstructVariables: boolean; // Check for undefined variables in CONSTRUCT queries
 }
 export interface PersistentConfig {
   query: string;
