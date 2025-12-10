@@ -923,13 +923,6 @@ export default class TabSettingsModal {
           { keys: ["Esc"], description: "Exit fullscreen mode" },
         ],
       },
-      {
-        category: "General Editor",
-        shortcuts: [
-          { keys: ["Ctrl+F", "Cmd+F"], description: "Find in query" },
-          { keys: ["Ctrl+H", "Cmd+H"], description: "Find and replace" },
-        ],
-      },
     ];
 
     shortcutsData.forEach((section) => {
