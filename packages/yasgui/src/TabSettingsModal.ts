@@ -1014,10 +1014,22 @@ export default class TabSettingsModal {
     // Footer info
     const footerInfo = document.createElement("div");
     addClass(footerInfo, "aboutFooter");
-    footerInfo.innerHTML = `
-      <p>YASGUI is an open-source project maintained by <a href="https://matdata.eu" target="_blank" rel="noopener noreferrer">Matdata</a>.</p>
-      <p>Licensed under the MIT License.</p>
-    `;
+
+    const paragraph1 = document.createElement("p");
+    paragraph1.textContent = "YASGUI is an open-source project maintained by ";
+    const matdataLink = document.createElement("a");
+    matdataLink.href = "https://matdata.eu";
+    matdataLink.target = "_blank";
+    matdataLink.rel = "noopener noreferrer";
+    matdataLink.textContent = "Matdata";
+    paragraph1.appendChild(matdataLink);
+    paragraph1.appendChild(document.createTextNode("."));
+
+    const paragraph2 = document.createElement("p");
+    paragraph2.textContent = "Licensed under the MIT License.";
+
+    footerInfo.appendChild(paragraph1);
+    footerInfo.appendChild(paragraph2);
     aboutSection.appendChild(footerInfo);
 
     container.appendChild(aboutSection);
