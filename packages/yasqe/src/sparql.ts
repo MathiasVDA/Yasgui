@@ -85,7 +85,7 @@ export function getAjaxConfig(
   try {
     // Check for Bearer Token authentication
     const bearerAuth = isFunction(config.bearerAuth) ? config.bearerAuth(yasqe) : config.bearerAuth;
-    if (bearerAuth && bearerAuth.token) {
+    if (bearerAuth && bearerAuth.token && bearerAuth.token.trim().length > 0) {
       if (finalHeaders["Authorization"] !== undefined) {
         console.warn(
           "Authorization header already exists in request headers; skipping Bearer Auth header to avoid overwrite.",
@@ -97,7 +97,13 @@ export function getAjaxConfig(
 
     // Check for API Key authentication
     const apiKeyAuth = isFunction(config.apiKeyAuth) ? config.apiKeyAuth(yasqe) : config.apiKeyAuth;
-    if (apiKeyAuth && apiKeyAuth.headerName && apiKeyAuth.apiKey) {
+    if (
+      apiKeyAuth &&
+      apiKeyAuth.headerName &&
+      apiKeyAuth.headerName.trim().length > 0 &&
+      apiKeyAuth.apiKey &&
+      apiKeyAuth.apiKey.trim().length > 0
+    ) {
       if (finalHeaders[apiKeyAuth.headerName] !== undefined) {
         console.warn(
           `Header "${apiKeyAuth.headerName}" already exists in request headers; skipping API Key header to avoid overwrite.`,

@@ -34,6 +34,9 @@ const AcceptHeaderGraphMap: { key: string; value: string }[] = [
   { key: "TSV", value: "text/tab-separated-values,*/*;q=0.9" },
 ];
 
+// Default API Key header name
+const DEFAULT_API_KEY_HEADER = "X-API-Key";
+
 export default class TabSettingsModal {
   private tab: Tab;
   private modalOverlay!: HTMLElement;
@@ -785,8 +788,8 @@ export default class TabSettingsModal {
     headerNameLabel.textContent = "Header Name";
     const headerNameInput = document.createElement("input");
     headerNameInput.type = "text";
-    headerNameInput.placeholder = "e.g., X-API-Key";
-    headerNameInput.value = existingAuth?.type === "apiKey" ? existingAuth.headerName : "X-API-Key";
+    headerNameInput.placeholder = `e.g., ${DEFAULT_API_KEY_HEADER}`;
+    headerNameInput.value = existingAuth?.type === "apiKey" ? existingAuth.headerName : DEFAULT_API_KEY_HEADER;
     headerNameSection.appendChild(headerNameLabel);
     headerNameSection.appendChild(headerNameInput);
     apiKeyAuthFields.appendChild(headerNameSection);
