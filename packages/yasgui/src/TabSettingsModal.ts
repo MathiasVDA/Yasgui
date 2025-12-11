@@ -209,7 +209,6 @@ export default class TabSettingsModal {
     contentArea.appendChild(endpointsContent);
     contentArea.appendChild(prefixContent);
     contentArea.appendChild(editorContent);
-    contentArea.appendChild(endpointsContent);
     contentArea.appendChild(importExportContent);
     contentArea.appendChild(shortcutsContent);
     contentArea.appendChild(aboutContent);
@@ -246,13 +245,12 @@ export default class TabSettingsModal {
     buttons.forEach((btn, index) => {
       if (
         (tabName === "request" && index === 0) ||
-        (tabName === "auth" && index === 1) ||
+        (tabName === "endpoints" && index === 1) ||
         (tabName === "prefix" && index === 2) ||
         (tabName === "editor" && index === 3) ||
-        (tabName === "endpoints" && index === 4) ||
-        (tabName === "importexport" && index === 5) ||
-        (tabName === "shortcuts" && index === 6) ||
-        (tabName === "about" && index === 7)
+        (tabName === "importexport" && index === 4) ||
+        (tabName === "shortcuts" && index === 5) ||
+        (tabName === "about" && index === 6)
       ) {
         addClass(btn as HTMLElement, "active");
       } else {
