@@ -769,6 +769,7 @@ export default class TabSettingsModal {
     const tokenInput = document.createElement("input");
     tokenInput.type = "password";
     tokenInput.placeholder = "Enter bearer token";
+    tokenInput.autocomplete = "off";
     tokenInput.value = existingAuth?.type === "bearer" ? existingAuth.token : "";
     tokenSection.appendChild(tokenLabel);
     tokenSection.appendChild(tokenInput);
