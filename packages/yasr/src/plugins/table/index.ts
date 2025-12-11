@@ -4,20 +4,16 @@
 import "./index.scss";
 import "datatables.net-dt/css/dataTables.dataTables.min.css";
 import "datatables.net-buttons-dt/css/buttons.dataTables.min.css";
-import "datatables.net-colreorder-dt/css/colReorder.dataTables.min.css";
 import "datatables.net-fixedheader-dt/css/fixedHeader.dataTables.min.css";
-import "datatables.net-responsive-dt/css/responsive.dataTables.min.css";
 import "datatables.net-scroller-dt/css/scroller.dataTables.min.css";
-import "datatables.net-searchpanes-dt/css/searchPanes.dataTables.min.css";
+import "datatables.net-columncontrol-dt/css/columnControl.dataTables.min.css";
 import "datatables.net";
 import "datatables.net-buttons";
 import "datatables.net-buttons/js/buttons.html5.mjs";
 import "datatables.net-buttons/js/buttons.colVis.mjs";
-import "datatables.net-colreorder";
 import "datatables.net-fixedheader";
-import "datatables.net-responsive";
 import "datatables.net-scroller";
-import "datatables.net-searchpanes";
+import "datatables.net-columncontrol";
 //@ts-ignore (jquery _does_ expose a default. In es6, it's the one we should use)
 import $ from "jquery";
 import Parser from "../../parsers";
@@ -29,10 +25,8 @@ import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 import { DeepReadonly } from "ts-essentials";
 import { cloneDeep } from "lodash-es";
 import sanitize from "../../helpers/sanitize";
-import type { Api, ConfigColumns, CellMetaSettings, Config } from "datatables.net";
 
 import ColumnResizer from "column-resizer";
-const DEFAULT_PAGE_SIZE = 50;
 
 export interface PluginConfig {
   openIriInNewWindow: boolean;
@@ -63,7 +57,7 @@ export default class Table implements Plugin<PluginConfig> {
   private yasr: Yasr;
   private tableControls: Element | undefined;
   private tableEl: HTMLTableElement | undefined;
-  private dataTable: Api | undefined;
+  private dataTable: any; // DataTables Api type
   private tableFilterField: HTMLInputElement | undefined;
   private tableCompactSwitch: HTMLInputElement | undefined;
   private tableCompactViewSwitch: HTMLInputElement | undefined;
@@ -80,7 +74,7 @@ export default class Table implements Plugin<PluginConfig> {
         onResize: () => void;
       }
     | undefined;
-  public helpReference = "https://docs.triply.cc/yasgui/#table";
+  public helpReference = "https://yasgui-doc.matdata.eu/docs/user-guide#table-plugin";
   public label = "Table";
   public priority = 10;
   public getIcon() {
@@ -95,56 +89,31 @@ export default class Table implements Plugin<PluginConfig> {
     openIriInNewWindow: true,
     tableConfig: {
       layout: {
-        // @ts-ignore
-        top: null, // @TODO: remove ignore once https://github.com/DataTables/DataTablesSrc/issues/271 is released
-        // @ts-ignore
-        topStart: "buttons", // @TODO: remove ignore once https://github.com/DataTables/DataTablesSrc/issues/271 is released
-        // @ts-ignore
-        topEnd: "searchPanes", // @TODO: remove ignore once https://github.com/DataTables/DataTablesSrc/issues/271 is released
+        top: null,
+        topStart: null,
+        topEnd: null,
+        bottom: null,
+        bottomStart: null,
+        bottomEnd: null,
       },
-      // Use scroller instead of pagination
+      // Use scroller with pagination enabled (required by Scroller)
       scrollY: "400px",
-      scroller: true,
+      scroller: {
+        loadingIndicator: true,
+      },
       deferRender: true,
-      // Disable pagination
-      paging: false,
+      // Pagination required by Scroller, but with large page size
+      paging: true,
+      pageLength: 10000,
       data: [],
       columns: [],
       order: [],
       orderClasses: false,
-      // Enable fixed header
-      fixedHeader: true,
-      // Enable column reordering
-      colReorder: true,
-      // Enable responsive
-      responsive: true,
-      // Configure buttons
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: "Copy",
-          exportOptions: {
-            columns: ":visible",
-          },
-        },
-        {
-          extend: "csvHtml5",
-          text: "CSV",
-          exportOptions: {
-            columns: ":visible",
-          },
-        },
-        {
-          extend: "colvis",
-          text: "Column Visibility",
-        },
-      ],
-      // Configure search panes
-      searchPanes: {
-        threshold: 1,
-        initCollapsed: true,
-        cascadePanes: true,
-        layout: "columns-3",
+      // Configure column control
+      columnControl: ["order", ["searchList"]],
+      ordering: {
+        indicators: false,
+        handler: false,
       },
     },
   };
@@ -184,6 +153,42 @@ export default class Table implements Plugin<PluginConfig> {
     });
 
     return markdown;
+  }
+
+  private getTabDelimitedTable(dt: any): string {
+    if (!this.yasr.results) return "";
+    const vars = this.yasr.results.getVariables();
+    const bindings = this.yasr.results.getBindings();
+    if (!bindings) return "";
+
+    // Get visible columns from DataTable
+    const visibleColumns = dt.columns(":visible").indexes().toArray();
+    const visibleVars = visibleColumns
+      .filter((idx: number) => idx > 0) // Skip row number column
+      .map((idx: number) => vars[idx - 1]); // Adjust for row number column
+
+    // Create header row
+    let output = visibleVars.join("\t") + "\n";
+
+    // Create data rows
+    bindings.forEach((binding) => {
+      const row = visibleVars.map((variable: string) => {
+        const value = binding[variable];
+        return value ? value.value : "";
+      });
+      output += row.join("\t") + "\n";
+    });
+
+    return output;
+  }
+
+  private async copyTabDelimited(dt: any) {
+    const tabDelimited = this.getTabDelimitedTable(dt);
+    try {
+      await navigator.clipboard.writeText(tabDelimited);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
   }
 
   private getUriLinkFromBinding(binding: Parser.BindingValue, prefixes?: { [key: string]: string }) {
@@ -236,7 +241,8 @@ export default class Table implements Plugin<PluginConfig> {
     return stringRepresentation;
   }
 
-  private getColumns(): ConfigColumns[] {
+  private getColumns(): any[] {
+    // DataTables ConfigColumns type
     if (!this.yasr.results) return [];
     const prefixes = this.yasr.getPrefixes();
 
@@ -252,10 +258,10 @@ export default class Table implements Plugin<PluginConfig> {
           type === "filter" || type === "sort" || !type ? data : `<div class="rowNumber">${data}</div>`,
       }, //prepend with row numbers column
       ...this.yasr.results?.getVariables().map((name) => {
-        return <ConfigColumns>{
+        return {
           name,
           title: sanitize(name),
-          render: (data: Parser.BindingValue | "", type: any, _row: any, _meta: CellMetaSettings) => {
+          render: (data: Parser.BindingValue | "", type: any, _row: any, _meta: any) => {
             // Handle empty rows
             if (data === "") return data;
             if (type === "filter" || type === "sort" || !type) return sanitize(data.value);
@@ -283,12 +289,20 @@ export default class Table implements Plugin<PluginConfig> {
       this.dataTable = undefined;
     }
     this.yasr.resultsEl.appendChild(this.tableEl);
+
+    // Configure extensions based on simple view setting
+    const isSimpleView = this.persistentConfig.compact === true;
+
     // Reset some default config properties as they couldn't be initialized beforehand
     // Using any type here to match tableConfig type (see PluginConfig interface for explanation)
     const dtConfig: any = {
       ...cloneDeep(this.config.tableConfig),
       data: rows,
       columns: columns,
+      // Disable extensions in simple view
+      fixedHeader: !isSimpleView,
+      colReorder: !isSimpleView,
+      columnControl: !isSimpleView ? ["order", ["searchList"]] : false,
     };
     this.dataTable = $(this.tableEl).DataTable(dtConfig);
     this.tableEl.style.removeProperty("width");
@@ -339,11 +353,10 @@ export default class Table implements Plugin<PluginConfig> {
       addClass(this.tableEl, "compactTable");
       this.setEllipsisHandlers();
     }
-    // if (this.tableEl.clientWidth > width) this.tableEl.parentElement?.style.setProperty("overflow", "hidden");
   }
 
   private setEllipsisHandlers = () => {
-    this.dataTable?.cells({ page: "current" }).every((rowIdx, colIdx) => {
+    this.dataTable?.cells({ page: "current" }).every((rowIdx: any, colIdx: any) => {
       const cell = this.dataTable?.cell(rowIdx, colIdx);
       if (cell?.data() === "") return;
       const cellNode = cell?.node() as HTMLTableCellElement;
@@ -395,30 +408,12 @@ export default class Table implements Plugin<PluginConfig> {
     this.draw(this.persistentConfig);
     this.yasr.storePluginConfig("table", this.persistentConfig);
   };
-  private handleCopyMarkdown = async (event: Event) => {
+  private handleCopyMarkdown = async () => {
     const markdown = this.getMarkdownTable();
-    const button = event.target as HTMLButtonElement;
-
-    // Prevent multiple rapid clicks
-    if (button.disabled) return;
-    button.disabled = true;
-
-    const originalText = "Copy as Markdown";
     try {
       await navigator.clipboard.writeText(markdown);
-      // Provide visual feedback
-      button.textContent = "Copied!";
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.disabled = false;
-      }, 2000);
     } catch (err) {
-      // Show user-friendly error
-      button.textContent = "Copy failed";
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.disabled = false;
-      }, 2000);
+      console.error("Failed to copy markdown:", err);
     }
   };
   /**
@@ -502,13 +497,67 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableControls.appendChild(this.tableFilterField);
     this.tableFilterField.addEventListener("keyup", this.handleTableSearch);
 
-    // Create markdown copy button
-    const markdownButton = document.createElement("button");
-    markdownButton.className = "copyMarkdownBtn";
-    markdownButton.textContent = "Copy as Markdown";
-    markdownButton.setAttribute("aria-label", "Copy table as markdown");
-    markdownButton.addEventListener("click", this.handleCopyMarkdown);
-    this.tableControls.appendChild(markdownButton);
+    // Create copy button with dropdown
+    const copyButton = document.createElement("div");
+    copyButton.className = "copyButtonWrapper";
+    copyButton.style.position = "relative";
+    copyButton.style.display = "inline-block";
+
+    const copyMainBtn = document.createElement("button");
+    copyMainBtn.className = "copyMarkdownBtn";
+    copyMainBtn.textContent = "Copy";
+    copyMainBtn.setAttribute("aria-label", "Copy table data");
+
+    const copyDropdown = document.createElement("div");
+    copyDropdown.className = "copyDropdown";
+    copyDropdown.style.display = "none";
+    copyDropdown.style.position = "absolute";
+    copyDropdown.style.backgroundColor = "var(--yasgui-bg-primary, #fff)";
+    copyDropdown.style.border = "1px solid var(--yasgui-border-color, #ddd)";
+    copyDropdown.style.borderRadius = "3px";
+    copyDropdown.style.zIndex = "1000";
+    copyDropdown.style.minWidth = "150px";
+
+    const tabDelimitedOption = document.createElement("button");
+    tabDelimitedOption.className = "copyOption";
+    tabDelimitedOption.textContent = "Tab-delimited";
+    tabDelimitedOption.style.display = "block";
+    tabDelimitedOption.style.width = "100%";
+    tabDelimitedOption.style.padding = "8px 12px";
+    tabDelimitedOption.style.border = "none";
+    tabDelimitedOption.style.background = "none";
+    tabDelimitedOption.style.textAlign = "left";
+    tabDelimitedOption.style.cursor = "pointer";
+    tabDelimitedOption.onclick = () => {
+      this.copyTabDelimited(this.dataTable);
+      copyDropdown.style.display = "none";
+    };
+
+    const markdownOption = document.createElement("button");
+    markdownOption.className = "copyOption";
+    markdownOption.textContent = "Markdown";
+    markdownOption.style.display = "block";
+    markdownOption.style.width = "100%";
+    markdownOption.style.padding = "8px 12px";
+    markdownOption.style.border = "none";
+    markdownOption.style.background = "none";
+    markdownOption.style.textAlign = "left";
+    markdownOption.style.cursor = "pointer";
+    markdownOption.onclick = () => {
+      this.handleCopyMarkdown();
+      copyDropdown.style.display = "none";
+    };
+
+    copyDropdown.appendChild(tabDelimitedOption);
+    copyDropdown.appendChild(markdownOption);
+
+    copyMainBtn.onclick = () => {
+      copyDropdown.style.display = copyDropdown.style.display === "none" ? "block" : "none";
+    };
+
+    copyButton.appendChild(copyMainBtn);
+    copyButton.appendChild(copyDropdown);
+    this.tableControls.appendChild(copyButton);
 
     this.yasr.pluginControls.appendChild(this.tableControls);
   }
