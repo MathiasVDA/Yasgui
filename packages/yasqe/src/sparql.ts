@@ -85,13 +85,14 @@ export function getAjaxConfig(
   try {
     // Check for Bearer Token authentication
     const bearerAuth = isFunction(config.bearerAuth) ? config.bearerAuth(yasqe) : config.bearerAuth;
-    if (bearerAuth && bearerAuth.token && bearerAuth.token.trim().length > 0) {
+    const trimmedBearerToken = bearerAuth && bearerAuth.token ? bearerAuth.token.trim() : "";
+    if (bearerAuth && trimmedBearerToken.length > 0) {
       if (finalHeaders["Authorization"] !== undefined) {
         console.warn(
           "Authorization header already exists in request headers; skipping Bearer Auth header to avoid overwrite.",
         );
       } else {
-        finalHeaders["Authorization"] = `Bearer ${bearerAuth.token}`;
+        finalHeaders["Authorization"] = `Bearer ${trimmedBearerToken}`;
       }
     }
 
