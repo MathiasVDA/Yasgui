@@ -51,32 +51,32 @@
 
     <script src="/packages/yasgui/build/yasgui.min.js"></script>
     <script>
+      // To test authentication, replace the `requestConfig` property below with the example shown here:
+      //
+      // Example: Configure different authentication types
+      //
+      // requestConfig: {
+      //   endpoint: "https://your-api.example.com/sparql",
+      //   // Basic Auth example:
+      //   basicAuth: {
+      //     username: "testuser",
+      //     password: "testpass"
+      //   },
+      //   // Bearer Token example:
+      //   bearerAuth: {
+      //     token: "your-bearer-token-here"
+      //   },
+      //   // API Key example:
+      //   apiKeyAuth: {
+      //     headerName: "X-API-Key",
+      //     apiKey: "your-api-key-here"
+      //   }
+      // }
+
       const yasgui = new Yasgui(document.getElementById("yasgui"), {
         requestConfig: {
           endpoint: "https://dbpedia.org/sparql",
         },
-        // Example: Configure different authentication types
-        // Uncomment to test:
-        /*
-        requestConfig: {
-          endpoint: "https://your-api.example.com/sparql",
-          // Basic Auth example:
-          basicAuth: {
-            username: "testuser",
-            password: "testpass"
-          },
-          // Bearer Token example:
-          bearerAuth: {
-            token: "your-bearer-token-here"
-          },
-          // API Key example:
-          apiKeyAuth: {
-            headerName: "X-API-Key",
-            apiKey: "your-api-key-here"
-          }
-        }
-        */
-      });
 
       // Log authentication configurations
       console.log("YASGUI initialized with authentication support");
