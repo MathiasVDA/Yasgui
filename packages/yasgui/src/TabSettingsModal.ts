@@ -123,6 +123,11 @@ export default class TabSettingsModal {
     addClass(requestTab, "modalTabButton", "active");
     requestTab.onclick = () => this.switchTab("request");
 
+    const authTab = document.createElement("button");
+    authTab.textContent = "Authentication";
+    addClass(authTab, "modalTabButton");
+    authTab.onclick = () => this.switchTab("auth");
+
     const prefixTab = document.createElement("button");
     prefixTab.textContent = "Prefixes";
     addClass(prefixTab, "modalTabButton");
@@ -154,6 +159,7 @@ export default class TabSettingsModal {
     aboutTab.onclick = () => this.switchTab("about");
 
     tabsContainer.appendChild(requestTab);
+    tabsContainer.appendChild(authTab);
     tabsContainer.appendChild(prefixTab);
     tabsContainer.appendChild(editorTab);
     tabsContainer.appendChild(endpointsTab);
@@ -167,6 +173,11 @@ export default class TabSettingsModal {
     addClass(requestContent, "modalTabContent", "active");
     requestContent.id = "request-content";
     this.drawRequestSettings(requestContent);
+
+    const authContent = document.createElement("div");
+    addClass(authContent, "modalTabContent");
+    authContent.id = "auth-content";
+    this.drawAuthSettings(authContent);
 
     const prefixContent = document.createElement("div");
     addClass(prefixContent, "modalTabContent");
@@ -199,6 +210,7 @@ export default class TabSettingsModal {
     this.drawAboutSettings(aboutContent);
 
     body.appendChild(requestContent);
+    body.appendChild(authContent);
     body.appendChild(prefixContent);
     body.appendChild(editorContent);
     body.appendChild(endpointsContent);
@@ -238,12 +250,13 @@ export default class TabSettingsModal {
     buttons.forEach((btn, index) => {
       if (
         (tabName === "request" && index === 0) ||
-        (tabName === "prefix" && index === 1) ||
-        (tabName === "editor" && index === 2) ||
-        (tabName === "endpoints" && index === 3) ||
-        (tabName === "importexport" && index === 4) ||
-        (tabName === "shortcuts" && index === 5) ||
-        (tabName === "about" && index === 6)
+        (tabName === "auth" && index === 1) ||
+        (tabName === "prefix" && index === 2) ||
+        (tabName === "editor" && index === 3) ||
+        (tabName === "endpoints" && index === 4) ||
+        (tabName === "importexport" && index === 5) ||
+        (tabName === "shortcuts" && index === 6) ||
+        (tabName === "about" && index === 7)
       ) {
         addClass(btn as HTMLElement, "active");
       } else {
@@ -436,6 +449,107 @@ export default class TabSettingsModal {
     container.appendChild(snippetsBarSection);
   }
 
+  private drawAuthSettings(container: HTMLElement) {
+    const reqConfig = this.tab.getRequestConfig();
+    const basicAuth = reqConfig.basicAuth as { username: string; password: string } | undefined;
+
+    // Enable/Disable Section
+    const enableSection = document.createElement("div");
+    addClass(enableSection, "settingsSection");
+
+    const enableCheckboxContainer = document.createElement("div");
+    addClass(enableCheckboxContainer, "checkboxContainer");
+
+    const enableCheckbox = document.createElement("input");
+    enableCheckbox.type = "checkbox";
+    enableCheckbox.id = "enableBasicAuth";
+    enableCheckbox.checked = !!basicAuth && !!basicAuth.username;
+
+    const enableLabel = document.createElement("label");
+    enableLabel.htmlFor = "enableBasicAuth";
+    enableLabel.textContent = "Enable Basic Authentication";
+
+    enableCheckboxContainer.appendChild(enableCheckbox);
+    enableCheckboxContainer.appendChild(enableLabel);
+
+    const enableHelp = document.createElement("div");
+    enableHelp.textContent = "Use HTTP Basic Authentication for SPARQL endpoint requests.";
+    addClass(enableHelp, "settingsHelp");
+    enableHelp.style.marginTop = "5px";
+
+    enableSection.appendChild(enableCheckboxContainer);
+    enableSection.appendChild(enableHelp);
+    container.appendChild(enableSection);
+
+    // Credentials Section
+    const credentialsSection = document.createElement("div");
+    addClass(credentialsSection, "settingsSection");
+
+    const usernameLabel = document.createElement("label");
+    usernameLabel.textContent = "Username";
+    addClass(usernameLabel, "settingsLabel");
+
+    const usernameInput = document.createElement("input");
+    usernameInput.type = "text";
+    usernameInput.id = "basicAuthUsername";
+    usernameInput.placeholder = "Enter username";
+    addClass(usernameInput, "settingsInput");
+    usernameInput.value = basicAuth?.username || "";
+    usernameInput.autocomplete = "username";
+
+    const passwordLabel = document.createElement("label");
+    passwordLabel.textContent = "Password";
+    addClass(passwordLabel, "settingsLabel");
+    passwordLabel.style.marginTop = "15px";
+
+    const passwordInput = document.createElement("input");
+    passwordInput.type = "password";
+    passwordInput.id = "basicAuthPassword";
+    passwordInput.placeholder = "Enter password";
+    addClass(passwordInput, "settingsInput");
+    passwordInput.value = basicAuth?.password || "";
+    passwordInput.autocomplete = "current-password";
+
+    credentialsSection.appendChild(usernameLabel);
+    credentialsSection.appendChild(usernameInput);
+    credentialsSection.appendChild(passwordLabel);
+    credentialsSection.appendChild(passwordInput);
+
+    container.appendChild(credentialsSection);
+
+    // Security Notice
+    const securitySection = document.createElement("div");
+    addClass(securitySection, "settingsSection");
+
+    const securityNotice = document.createElement("div");
+    addClass(securityNotice, "settingsHelp", "securityNotice");
+    securityNotice.innerHTML = `
+      <strong>⚠️ Security Notice:</strong>
+      <ul style="margin: 8px 0 0 20px; padding: 0;">
+        <li>Credentials are stored in browser localStorage</li>
+        <li>Only use with HTTPS endpoints</li>
+        <li>Be cautious when using on shared computers</li>
+      </ul>
+    `;
+
+    securitySection.appendChild(securityNotice);
+    container.appendChild(securitySection);
+
+    // Enable/disable credentials fields based on checkbox
+    const updateFieldsState = () => {
+      usernameInput.disabled = !enableCheckbox.checked;
+      passwordInput.disabled = !enableCheckbox.checked;
+      if (!enableCheckbox.checked) {
+        addClass(credentialsSection, "disabled");
+      } else {
+        removeClass(credentialsSection, "disabled");
+      }
+    };
+
+    enableCheckbox.addEventListener("change", updateFieldsState);
+    updateFieldsState();
+  }
+
   private drawRequestSettings(container: HTMLElement) {
     // This is a simplified version - you can expand based on TabPanel.ts
     const reqConfig = this.tab.getRequestConfig();
@@ -574,6 +688,29 @@ export default class TabSettingsModal {
         }
       });
       this.tab.setRequestConfig(updates);
+    }
+
+    // Save authentication settings
+    const authContent = this.modalContent.querySelector("#auth-content");
+    if (authContent) {
+      const enableCheckbox = authContent.querySelector("#enableBasicAuth") as HTMLInputElement;
+      const usernameInput = authContent.querySelector("#basicAuthUsername") as HTMLInputElement;
+      const passwordInput = authContent.querySelector("#basicAuthPassword") as HTMLInputElement;
+
+      if (enableCheckbox && enableCheckbox.checked && usernameInput && passwordInput) {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        if (username && password) {
+          this.tab.setRequestConfig({
+            basicAuth: { username, password },
+          });
+        }
+      } else {
+        // Clear authentication if disabled
+        this.tab.setRequestConfig({
+          basicAuth: undefined,
+        });
+      }
     }
 
     // Refresh endpoint buttons to show any changes

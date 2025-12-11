@@ -1,4 +1,4 @@
-import { default as Yasqe, Config, RequestConfig } from "./";
+import { default as Yasqe, Config, RequestConfig, BasicAuthConfig } from "./";
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
 export type YasqeAjaxConfig = Config["requestConfig"];
@@ -15,6 +15,15 @@ function getRequestConfigSettings(yasqe: Yasqe, conf?: Partial<Config["requestCo
     return conf(yasqe) as RequestConfig<Yasqe>;
   }
   return (conf ?? {}) as RequestConfig<Yasqe>;
+}
+
+/**
+ * Create a Basic Authentication header value
+ */
+function createBasicAuthHeader(username: string, password: string): string {
+  const credentials = `${username}:${password}`;
+  const encoded = btoa(credentials);
+  return `Basic ${encoded}`;
 }
 // type callback = AjaxConfig.callbacks['complete'];
 export function getAjaxConfig(
@@ -38,11 +47,19 @@ export function getAjaxConfig(
   const headers = isFunction(config.headers) ? config.headers(yasqe) : config.headers;
   // console.log({headers})
   const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
+
+  // Add Basic Authentication header if configured
+  const basicAuth = isFunction(config.basicAuth) ? config.basicAuth(yasqe) : config.basicAuth;
+  const finalHeaders = { ...headers };
+  if (basicAuth && basicAuth.username && basicAuth.password) {
+    finalHeaders["Authorization"] = createBasicAuthHeader(basicAuth.username, basicAuth.password);
+  }
+
   return {
     reqMethod,
     url: endpoint,
     args: getUrlArguments(yasqe, config),
-    headers: headers,
+    headers: finalHeaders,
     accept: getAcceptHeader(yasqe, config),
     withCredentials,
   };

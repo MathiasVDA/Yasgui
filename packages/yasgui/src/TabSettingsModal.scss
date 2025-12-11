@@ -185,8 +185,7 @@
   padding: 10px;
   border: 1px solid var(--yasgui-input-border, #ccc);
   border-radius: 4px;
-  font-family:
-    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 13px;
   resize: vertical;
   box-sizing: border-box;
@@ -219,6 +218,60 @@
     user-select: none;
     margin: 0;
     color: var(--yasgui-text-primary, #000);
+  }
+}
+
+.settingsInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--yasgui-input-border, #ccc);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--yasgui-bg-secondary, white);
+  color: var(--yasgui-text-primary, #000);
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: var(--yasgui-input-focus, #337ab7);
+    box-shadow: 0 0 0 2px rgba(51, 122, 183, 0.1);
+  }
+
+  &:disabled {
+    background-color: var(--yasgui-bg-tertiary, #f5f5f5);
+    color: var(--yasgui-text-muted, #999);
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: var(--yasgui-text-muted, #999);
+  }
+}
+
+.settingsSection.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.securityNotice {
+  background: var(--yasgui-warning-bg, #fff3cd);
+  color: var(--yasgui-warning-text, #856404);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--yasgui-warning-border, #ffeaa7);
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  ul {
+    margin: 8px 0 0 20px;
+    padding: 0;
+  }
+
+  li {
+    margin: 4px 0;
   }
 }
 
@@ -496,8 +549,7 @@
     display: inline-block;
     padding: 4px 8px;
     font-size: 12px;
-    font-family:
-      SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     line-height: 1.4;
     color: var(--yasgui-text-primary, #333);
     background-color: var(--yasgui-bg-secondary, #f7f7f7);
