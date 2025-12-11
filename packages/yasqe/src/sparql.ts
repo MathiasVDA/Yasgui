@@ -98,19 +98,19 @@ export function getAjaxConfig(
 
     // Check for API Key authentication
     const apiKeyAuth = isFunction(config.apiKeyAuth) ? config.apiKeyAuth(yasqe) : config.apiKeyAuth;
+    const trimmedHeaderName = apiKeyAuth && apiKeyAuth.headerName ? apiKeyAuth.headerName.trim() : "";
+    const trimmedApiKey = apiKeyAuth && apiKeyAuth.apiKey ? apiKeyAuth.apiKey.trim() : "";
     if (
       apiKeyAuth &&
-      apiKeyAuth.headerName &&
-      apiKeyAuth.headerName.trim().length > 0 &&
-      apiKeyAuth.apiKey &&
-      apiKeyAuth.apiKey.trim().length > 0
+      trimmedHeaderName.length > 0 &&
+      trimmedApiKey.length > 0
     ) {
-      if (finalHeaders[apiKeyAuth.headerName] !== undefined) {
+      if (finalHeaders[trimmedHeaderName] !== undefined) {
         console.warn(
-          `Header "${apiKeyAuth.headerName}" already exists in request headers; skipping API Key header to avoid overwrite.`,
+          `Header "${trimmedHeaderName}" already exists in request headers; skipping API Key header to avoid overwrite.`,
         );
       } else {
-        finalHeaders[apiKeyAuth.headerName] = apiKeyAuth.apiKey;
+        finalHeaders[trimmedHeaderName] = trimmedApiKey;
       }
     }
 
