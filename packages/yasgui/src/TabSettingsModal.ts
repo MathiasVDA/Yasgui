@@ -689,22 +689,42 @@ export default class TabSettingsModal {
     const body = document.createElement("div");
     addClass(body, "authModalBody");
 
-    // Auth type (for now only basic, but designed for future)
+    // Auth type
     const typeSection = document.createElement("div");
     addClass(typeSection, "authModalSection");
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Authentication Type";
     const typeSelect = document.createElement("select");
+
     const basicOption = document.createElement("option");
     basicOption.value = "basic";
     basicOption.textContent = "HTTP Basic Authentication";
     typeSelect.appendChild(basicOption);
-    // Future: Add OAuth, Bearer Token, etc.
+
+    const bearerOption = document.createElement("option");
+    bearerOption.value = "bearer";
+    bearerOption.textContent = "Bearer Token";
+    typeSelect.appendChild(bearerOption);
+
+    const apiKeyOption = document.createElement("option");
+    apiKeyOption.value = "apiKey";
+    apiKeyOption.textContent = "API Key (Custom Header)";
+    typeSelect.appendChild(apiKeyOption);
+
+    // Set the current auth type
+    if (existingAuth) {
+      typeSelect.value = existingAuth.type;
+    }
+
     typeSection.appendChild(typeLabel);
     typeSection.appendChild(typeSelect);
     body.appendChild(typeSection);
 
-    // Username
+    // Basic Auth Fields
+    const basicAuthFields = document.createElement("div");
+    basicAuthFields.id = "basicAuthFields";
+    addClass(basicAuthFields, "authFieldsContainer");
+
     const usernameSection = document.createElement("div");
     addClass(usernameSection, "authModalSection");
     const usernameLabel = document.createElement("label");
@@ -712,13 +732,12 @@ export default class TabSettingsModal {
     const usernameInput = document.createElement("input");
     usernameInput.type = "text";
     usernameInput.placeholder = "Enter username";
-    usernameInput.value = existingAuth?.username || "";
+    usernameInput.value = existingAuth?.type === "basic" ? existingAuth.username : "";
     usernameInput.autocomplete = "username";
     usernameSection.appendChild(usernameLabel);
     usernameSection.appendChild(usernameInput);
-    body.appendChild(usernameSection);
+    basicAuthFields.appendChild(usernameSection);
 
-    // Password
     const passwordSection = document.createElement("div");
     addClass(passwordSection, "authModalSection");
     const passwordLabel = document.createElement("label");
@@ -726,11 +745,79 @@ export default class TabSettingsModal {
     const passwordInput = document.createElement("input");
     passwordInput.type = "password";
     passwordInput.placeholder = "Enter password";
-    passwordInput.value = existingAuth?.password || "";
+    passwordInput.value = existingAuth?.type === "basic" ? existingAuth.password : "";
     passwordInput.autocomplete = "current-password";
     passwordSection.appendChild(passwordLabel);
     passwordSection.appendChild(passwordInput);
-    body.appendChild(passwordSection);
+    basicAuthFields.appendChild(passwordSection);
+
+    body.appendChild(basicAuthFields);
+
+    // Bearer Token Fields
+    const bearerAuthFields = document.createElement("div");
+    bearerAuthFields.id = "bearerAuthFields";
+    addClass(bearerAuthFields, "authFieldsContainer");
+    bearerAuthFields.style.display = "none";
+
+    const tokenSection = document.createElement("div");
+    addClass(tokenSection, "authModalSection");
+    const tokenLabel = document.createElement("label");
+    tokenLabel.textContent = "Bearer Token";
+    const tokenInput = document.createElement("input");
+    tokenInput.type = "password";
+    tokenInput.placeholder = "Enter bearer token";
+    tokenInput.value = existingAuth?.type === "bearer" ? existingAuth.token : "";
+    tokenSection.appendChild(tokenLabel);
+    tokenSection.appendChild(tokenInput);
+    bearerAuthFields.appendChild(tokenSection);
+
+    body.appendChild(bearerAuthFields);
+
+    // API Key Fields
+    const apiKeyAuthFields = document.createElement("div");
+    apiKeyAuthFields.id = "apiKeyAuthFields";
+    addClass(apiKeyAuthFields, "authFieldsContainer");
+    apiKeyAuthFields.style.display = "none";
+
+    const headerNameSection = document.createElement("div");
+    addClass(headerNameSection, "authModalSection");
+    const headerNameLabel = document.createElement("label");
+    headerNameLabel.textContent = "Header Name";
+    const headerNameInput = document.createElement("input");
+    headerNameInput.type = "text";
+    headerNameInput.placeholder = "e.g., X-API-Key";
+    headerNameInput.value = existingAuth?.type === "apiKey" ? existingAuth.headerName : "X-API-Key";
+    headerNameSection.appendChild(headerNameLabel);
+    headerNameSection.appendChild(headerNameInput);
+    apiKeyAuthFields.appendChild(headerNameSection);
+
+    const apiKeySection = document.createElement("div");
+    addClass(apiKeySection, "authModalSection");
+    const apiKeyLabel = document.createElement("label");
+    apiKeyLabel.textContent = "API Key";
+    const apiKeyInput = document.createElement("input");
+    apiKeyInput.type = "password";
+    apiKeyInput.placeholder = "Enter API key";
+    apiKeyInput.value = existingAuth?.type === "apiKey" ? existingAuth.apiKey : "";
+    apiKeySection.appendChild(apiKeyLabel);
+    apiKeySection.appendChild(apiKeyInput);
+    apiKeyAuthFields.appendChild(apiKeySection);
+
+    body.appendChild(apiKeyAuthFields);
+
+    // Function to toggle fields based on auth type
+    const toggleAuthFields = () => {
+      const authType = typeSelect.value;
+      basicAuthFields.style.display = authType === "basic" ? "block" : "none";
+      bearerAuthFields.style.display = authType === "bearer" ? "block" : "none";
+      apiKeyAuthFields.style.display = authType === "apiKey" ? "block" : "none";
+    };
+
+    // Set initial visibility
+    toggleAuthFields();
+
+    // Update visibility when auth type changes
+    typeSelect.onchange = toggleAuthFields;
 
     // Security notice
     const securityNotice = document.createElement("div");
@@ -778,22 +865,60 @@ export default class TabSettingsModal {
     saveButton.type = "button";
     addClass(saveButton, "authSaveButton");
     saveButton.onclick = () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value;
+      const authType = typeSelect.value;
 
-      if (username && password) {
-        this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {
-          authentication: {
-            type: "basic",
-            username,
-            password,
-          },
-        });
-        authModalOverlay.remove();
-        const endpointsList = this.modalContent.querySelector(".endpointsTable");
-        if (endpointsList) this.renderEndpointsList(endpointsList as HTMLElement);
-      } else {
-        alert("Please enter both username and password.");
+      if (authType === "basic") {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+
+        if (username && password) {
+          this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {
+            authentication: {
+              type: "basic",
+              username,
+              password,
+            },
+          });
+          authModalOverlay.remove();
+          const endpointsList = this.modalContent.querySelector(".endpointsTable");
+          if (endpointsList) this.renderEndpointsList(endpointsList as HTMLElement);
+        } else {
+          alert("Please enter both username and password.");
+        }
+      } else if (authType === "bearer") {
+        const token = tokenInput.value.trim();
+
+        if (token) {
+          this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {
+            authentication: {
+              type: "bearer",
+              token,
+            },
+          });
+          authModalOverlay.remove();
+          const endpointsList = this.modalContent.querySelector(".endpointsTable");
+          if (endpointsList) this.renderEndpointsList(endpointsList as HTMLElement);
+        } else {
+          alert("Please enter a bearer token.");
+        }
+      } else if (authType === "apiKey") {
+        const headerName = headerNameInput.value.trim();
+        const apiKey = apiKeyInput.value.trim();
+
+        if (headerName && apiKey) {
+          this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {
+            authentication: {
+              type: "apiKey",
+              headerName,
+              apiKey,
+            },
+          });
+          authModalOverlay.remove();
+          const endpointsList = this.modalContent.querySelector(".endpointsTable");
+          if (endpointsList) this.renderEndpointsList(endpointsList as HTMLElement);
+        } else {
+          alert("Please enter both header name and API key.");
+        }
       }
     };
 

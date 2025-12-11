@@ -80,9 +80,34 @@ export function getAjaxConfig(
   // console.log({headers})
   const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
 
-  // Add Basic Authentication header if configured
+  // Add Authentication headers if configured
   const finalHeaders = { ...headers };
   try {
+    // Check for Bearer Token authentication
+    const bearerAuth = isFunction(config.bearerAuth) ? config.bearerAuth(yasqe) : config.bearerAuth;
+    if (bearerAuth && bearerAuth.token) {
+      if (finalHeaders["Authorization"] !== undefined) {
+        console.warn(
+          "Authorization header already exists in request headers; skipping Bearer Auth header to avoid overwrite.",
+        );
+      } else {
+        finalHeaders["Authorization"] = `Bearer ${bearerAuth.token}`;
+      }
+    }
+
+    // Check for API Key authentication
+    const apiKeyAuth = isFunction(config.apiKeyAuth) ? config.apiKeyAuth(yasqe) : config.apiKeyAuth;
+    if (apiKeyAuth && apiKeyAuth.headerName && apiKeyAuth.apiKey) {
+      if (finalHeaders[apiKeyAuth.headerName] !== undefined) {
+        console.warn(
+          `Header "${apiKeyAuth.headerName}" already exists in request headers; skipping API Key header to avoid overwrite.`,
+        );
+      } else {
+        finalHeaders[apiKeyAuth.headerName] = apiKeyAuth.apiKey;
+      }
+    }
+
+    // Check for Basic Authentication (lowest priority)
     const basicAuth = isFunction(config.basicAuth) ? config.basicAuth(yasqe) : config.basicAuth;
     if (basicAuth && basicAuth.username && basicAuth.password) {
       if (finalHeaders["Authorization"] !== undefined) {
@@ -94,7 +119,7 @@ export function getAjaxConfig(
       }
     }
   } catch (error) {
-    console.warn("Failed to configure basic authentication:", error);
+    console.warn("Failed to configure authentication:", error);
     // Continue without authentication if there's an error
   }
 

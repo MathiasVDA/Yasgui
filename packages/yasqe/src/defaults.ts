@@ -175,6 +175,8 @@ SELECT * WHERE {
     withCredentials: false,
     adjustQueryBeforeRequest: false,
     basicAuth: undefined,
+    bearerAuth: undefined,
+    apiKeyAuth: undefined,
   };
   return { ...config, requestConfig };
 }
