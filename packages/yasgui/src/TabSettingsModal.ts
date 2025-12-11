@@ -445,105 +445,291 @@ export default class TabSettingsModal {
     container.appendChild(snippetsBarSection);
   }
 
-  private drawAuthSettings(container: HTMLElement) {
-    const reqConfig = this.tab.getRequestConfig();
-    const basicAuth = reqConfig.basicAuth as { username: string; password: string } | undefined;
+  private drawEndpointsSettings(container: HTMLElement) {
+    const section = document.createElement("div");
+    addClass(section, "settingsSection");
 
-    // Enable/Disable Section
-    const enableSection = document.createElement("div");
-    addClass(enableSection, "settingsSection");
+    const label = document.createElement("label");
+    label.textContent = "SPARQL Endpoints";
+    addClass(label, "settingsLabel");
 
-    const enableCheckboxContainer = document.createElement("div");
-    addClass(enableCheckboxContainer, "checkboxContainer");
+    const help = document.createElement("div");
+    help.textContent =
+      "Manage your SPARQL endpoints. Each endpoint can have its own authentication and be displayed as a quick-switch button.";
+    addClass(help, "settingsHelp");
 
-    const enableCheckbox = document.createElement("input");
-    enableCheckbox.type = "checkbox";
-    enableCheckbox.id = "enableBasicAuth";
-    enableCheckbox.checked = !!basicAuth && !!basicAuth.username;
+    section.appendChild(label);
+    section.appendChild(help);
 
-    const enableLabel = document.createElement("label");
-    enableLabel.htmlFor = "enableBasicAuth";
-    enableLabel.textContent = "Enable Basic Authentication";
+    // List of endpoints
+    const endpointsList = document.createElement("div");
+    addClass(endpointsList, "endpointsTable");
+    this.renderEndpointsList(endpointsList);
+    section.appendChild(endpointsList);
 
-    enableCheckboxContainer.appendChild(enableCheckbox);
-    enableCheckboxContainer.appendChild(enableLabel);
+    container.appendChild(section);
+  }
 
-    const enableHelp = document.createElement("div");
-    enableHelp.textContent = "Use HTTP Basic Authentication for SPARQL endpoint requests.";
-    addClass(enableHelp, "settingsHelp");
-    enableHelp.style.marginTop = "5px";
+  private renderEndpointsList(container: HTMLElement) {
+    container.innerHTML = "";
+    const configs = this.tab.yasgui.persistentConfig.getEndpointConfigs();
 
-    enableSection.appendChild(enableCheckboxContainer);
-    enableSection.appendChild(enableHelp);
-    container.appendChild(enableSection);
+    if (configs.length === 0) {
+      const emptyMsg = document.createElement("div");
+      emptyMsg.textContent = "No endpoints yet. Access an endpoint to have it automatically tracked here.";
+      addClass(emptyMsg, "emptyMessage");
+      container.appendChild(emptyMsg);
+      return;
+    }
 
-    // Credentials Section
-    const credentialsSection = document.createElement("div");
-    addClass(credentialsSection, "settingsSection");
+    // Create table
+    const table = document.createElement("table");
+    addClass(table, "endpointsTableElement");
 
+    // Header
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    const headers = ["Endpoint", "Label", "Button", "Authentication", "Actions"];
+    headers.forEach((h) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Body
+    const tbody = document.createElement("tbody");
+    configs.forEach((config, index) => {
+      const row = document.createElement("tr");
+
+      // Endpoint column
+      const endpointCell = document.createElement("td");
+      endpointCell.textContent = config.endpoint;
+      endpointCell.title = config.endpoint;
+      addClass(endpointCell, "endpointCell");
+      row.appendChild(endpointCell);
+
+      // Label column (editable)
+      const labelCell = document.createElement("td");
+      const labelInput = document.createElement("input");
+      labelInput.type = "text";
+      labelInput.value = config.label || "";
+      labelInput.placeholder = "Optional label";
+      addClass(labelInput, "endpointLabelInput");
+      labelInput.onchange = () => {
+        this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(config.endpoint, {
+          label: labelInput.value.trim() || undefined,
+        });
+        this.renderEndpointsList(container);
+        this.tab.refreshEndpointButtons();
+      };
+      labelCell.appendChild(labelInput);
+      row.appendChild(labelCell);
+
+      // Show as Button checkbox (requires label)
+      const buttonCell = document.createElement("td");
+      const buttonCheckbox = document.createElement("input");
+      buttonCheckbox.type = "checkbox";
+      buttonCheckbox.checked = !!config.showAsButton;
+      buttonCheckbox.disabled = !config.label;
+      buttonCheckbox.title = config.label
+        ? "Show this endpoint as a quick-switch button"
+        : "Add a label first to enable button";
+      buttonCheckbox.onchange = () => {
+        this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(config.endpoint, {
+          showAsButton: buttonCheckbox.checked,
+        });
+        this.tab.refreshEndpointButtons();
+      };
+      buttonCell.appendChild(buttonCheckbox);
+      addClass(buttonCell, "centerCell");
+      row.appendChild(buttonCell);
+
+      // Authentication column
+      const authCell = document.createElement("td");
+      const authButton = document.createElement("button");
+      authButton.type = "button";
+      addClass(authButton, "configureAuthButton");
+      if (config.authentication) {
+        authButton.textContent = "✓ Configured";
+        addClass(authButton, "authenticated");
+      } else {
+        authButton.textContent = "Configure";
+      }
+      authButton.onclick = () => this.showAuthenticationModal(config.endpoint);
+      authCell.appendChild(authButton);
+      addClass(authCell, "centerCell");
+      row.appendChild(authCell);
+
+      // Actions column
+      const actionsCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.textContent = "Delete";
+      addClass(deleteButton, "deleteEndpointButton");
+      deleteButton.onclick = () => {
+        if (confirm(`Delete endpoint "${config.endpoint}"?`)) {
+          this.tab.yasgui.persistentConfig.deleteEndpointConfig(config.endpoint);
+          this.renderEndpointsList(container);
+          this.tab.refreshEndpointButtons();
+        }
+      };
+      actionsCell.appendChild(deleteButton);
+      addClass(actionsCell, "centerCell");
+      row.appendChild(actionsCell);
+
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  private showAuthenticationModal(endpoint: string) {
+    const config = this.tab.yasgui.persistentConfig.getEndpointConfig(endpoint);
+    const existingAuth = config?.authentication;
+
+    // Create modal overlay
+    const authModalOverlay = document.createElement("div");
+    addClass(authModalOverlay, "authModalOverlay");
+    authModalOverlay.onclick = () => authModalOverlay.remove();
+
+    // Create modal content
+    const authModal = document.createElement("div");
+    addClass(authModal, "authModal");
+    authModal.onclick = (e) => e.stopPropagation();
+
+    // Header
+    const header = document.createElement("div");
+    addClass(header, "authModalHeader");
+    const title = document.createElement("h3");
+    title.textContent = "Configure Authentication";
+    const subtitle = document.createElement("div");
+    subtitle.textContent = endpoint;
+    addClass(subtitle, "authModalSubtitle");
+    header.appendChild(title);
+    header.appendChild(subtitle);
+    authModal.appendChild(header);
+
+    // Body
+    const body = document.createElement("div");
+    addClass(body, "authModalBody");
+
+    // Auth type (for now only basic, but designed for future)
+    const typeSection = document.createElement("div");
+    addClass(typeSection, "authModalSection");
+    const typeLabel = document.createElement("label");
+    typeLabel.textContent = "Authentication Type";
+    const typeSelect = document.createElement("select");
+    const basicOption = document.createElement("option");
+    basicOption.value = "basic";
+    basicOption.textContent = "HTTP Basic Authentication";
+    typeSelect.appendChild(basicOption);
+    // Future: Add OAuth, Bearer Token, etc.
+    typeSection.appendChild(typeLabel);
+    typeSection.appendChild(typeSelect);
+    body.appendChild(typeSection);
+
+    // Username
+    const usernameSection = document.createElement("div");
+    addClass(usernameSection, "authModalSection");
     const usernameLabel = document.createElement("label");
     usernameLabel.textContent = "Username";
-    addClass(usernameLabel, "settingsLabel");
-
     const usernameInput = document.createElement("input");
     usernameInput.type = "text";
-    usernameInput.id = "basicAuthUsername";
     usernameInput.placeholder = "Enter username";
-    addClass(usernameInput, "settingsInput");
-    usernameInput.value = basicAuth?.username || "";
+    usernameInput.value = existingAuth?.username || "";
     usernameInput.autocomplete = "username";
+    usernameSection.appendChild(usernameLabel);
+    usernameSection.appendChild(usernameInput);
+    body.appendChild(usernameSection);
 
+    // Password
+    const passwordSection = document.createElement("div");
+    addClass(passwordSection, "authModalSection");
     const passwordLabel = document.createElement("label");
     passwordLabel.textContent = "Password";
-    addClass(passwordLabel, "settingsLabel");
-    passwordLabel.style.marginTop = "15px";
-
     const passwordInput = document.createElement("input");
     passwordInput.type = "password";
-    passwordInput.id = "basicAuthPassword";
     passwordInput.placeholder = "Enter password";
-    addClass(passwordInput, "settingsInput");
-    passwordInput.value = basicAuth?.password || "";
+    passwordInput.value = existingAuth?.password || "";
     passwordInput.autocomplete = "current-password";
+    passwordSection.appendChild(passwordLabel);
+    passwordSection.appendChild(passwordInput);
+    body.appendChild(passwordSection);
 
-    credentialsSection.appendChild(usernameLabel);
-    credentialsSection.appendChild(usernameInput);
-    credentialsSection.appendChild(passwordLabel);
-    credentialsSection.appendChild(passwordInput);
-
-    container.appendChild(credentialsSection);
-
-    // Security Notice
-    const securitySection = document.createElement("div");
-    addClass(securitySection, "settingsSection");
-
+    // Security notice
     const securityNotice = document.createElement("div");
-    addClass(securityNotice, "settingsHelp", "securityNotice");
+    addClass(securityNotice, "authSecurityNotice");
     securityNotice.innerHTML = `
       <strong>⚠️ Security Notice:</strong>
-      <ul style="margin: 8px 0 0 20px; padding: 0;">
+      <ul>
         <li>Credentials are stored in browser localStorage</li>
         <li>Only use with HTTPS endpoints</li>
         <li>Be cautious when using on shared computers</li>
       </ul>
     `;
+    body.appendChild(securityNotice);
 
-    securitySection.appendChild(securityNotice);
-    container.appendChild(securitySection);
+    authModal.appendChild(body);
 
-    // Enable/disable credentials fields based on checkbox
-    const updateFieldsState = () => {
-      usernameInput.disabled = !enableCheckbox.checked;
-      passwordInput.disabled = !enableCheckbox.checked;
-      if (!enableCheckbox.checked) {
-        addClass(credentialsSection, "disabled");
+    // Footer
+    const footer = document.createElement("div");
+    addClass(footer, "authModalFooter");
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Remove Authentication";
+    removeButton.type = "button";
+    addClass(removeButton, "authRemoveButton");
+    removeButton.onclick = () => {
+      this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {
+        authentication: undefined,
+      });
+      authModalOverlay.remove();
+      const endpointsList = this.modalContent.querySelector(".endpointsTable");
+      if (endpointsList) this.renderEndpointsList(endpointsList as HTMLElement);
+    };
+    if (!existingAuth) {
+      removeButton.disabled = true;
+    }
+
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "Cancel";
+    cancelButton.type = "button";
+    addClass(cancelButton, "authCancelButton");
+    cancelButton.onclick = () => authModalOverlay.remove();
+
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "Save";
+    saveButton.type = "button";
+    addClass(saveButton, "authSaveButton");
+    saveButton.onclick = () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      if (username && password) {
+        this.tab.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {
+          authentication: {
+            type: "basic",
+            username,
+            password,
+          },
+        });
+        authModalOverlay.remove();
+        const endpointsList = this.modalContent.querySelector(".endpointsTable");
+        if (endpointsList) this.renderEndpointsList(endpointsList as HTMLElement);
       } else {
-        removeClass(credentialsSection, "disabled");
+        alert("Please enter both username and password.");
       }
     };
 
-    enableCheckbox.addEventListener("change", updateFieldsState);
-    updateFieldsState();
+    footer.appendChild(removeButton);
+    footer.appendChild(cancelButton);
+    footer.appendChild(saveButton);
+    authModal.appendChild(footer);
+
+    authModalOverlay.appendChild(authModal);
+    document.body.appendChild(authModalOverlay);
   }
 
   private drawRequestSettings(container: HTMLElement) {
@@ -686,33 +872,8 @@ export default class TabSettingsModal {
       this.tab.setRequestConfig(updates);
     }
 
-    // Save authentication settings
-    const authContent = this.modalContent.querySelector("#auth-content");
-    if (authContent) {
-      const enableCheckbox = authContent.querySelector("#enableBasicAuth") as HTMLInputElement;
-      const usernameInput = authContent.querySelector("#basicAuthUsername") as HTMLInputElement;
-      const passwordInput = authContent.querySelector("#basicAuthPassword") as HTMLInputElement;
-
-      if (enableCheckbox && enableCheckbox.checked && usernameInput && passwordInput) {
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value;
-        if (username && password) {
-          this.tab.setRequestConfig({
-            basicAuth: { username, password },
-          });
-        } else {
-          // Clear authentication if credentials are incomplete
-          this.tab.setRequestConfig({
-            basicAuth: undefined,
-          });
-        }
-      } else {
-        // Clear authentication if disabled
-        this.tab.setRequestConfig({
-          basicAuth: undefined,
-        });
-      }
-    }
+    // Note: Authentication is now handled per-endpoint in the Endpoints tab,
+    // not per-tab anymore. No need to save it here.
 
     // Refresh endpoint buttons to show any changes
     this.tab.refreshEndpointButtons();
@@ -812,116 +973,8 @@ export default class TabSettingsModal {
     this.tab.yasgui.persistentConfig.setPrefixes(deduplicated);
   }
 
-  private drawEndpointButtonsSettings(container: HTMLElement) {
-    const section = document.createElement("div");
-    addClass(section, "settingsSection");
-
-    const label = document.createElement("label");
-    label.textContent = "Custom Endpoint Buttons";
-    addClass(label, "settingsLabel");
-
-    const help = document.createElement("div");
-    help.textContent = "Add custom endpoint buttons that will appear next to the endpoint textbox.";
-    addClass(help, "settingsHelp");
-
-    section.appendChild(label);
-    section.appendChild(help);
-
-    // List of existing buttons
-    const buttonsList = document.createElement("div");
-    addClass(buttonsList, "endpointButtonsList");
-    this.renderEndpointButtonsList(buttonsList);
-    section.appendChild(buttonsList);
-
-    // Form to add new button
-    const addForm = document.createElement("div");
-    addClass(addForm, "addEndpointButtonForm");
-
-    const labelInput = document.createElement("input");
-    labelInput.type = "text";
-    labelInput.placeholder = "Button label (e.g., DBpedia)";
-    addClass(labelInput, "endpointButtonLabelInput");
-
-    const endpointInput = document.createElement("input");
-    endpointInput.type = "url";
-    endpointInput.placeholder = "Endpoint URL (e.g., https://dbpedia.org/sparql)";
-    addClass(endpointInput, "endpointButtonEndpointInput");
-
-    const addButton = document.createElement("button");
-    addButton.textContent = "+ Add Button";
-    addClass(addButton, "addEndpointButton");
-    addButton.type = "button";
-    addButton.onclick = () => {
-      const labelValue = labelInput.value.trim();
-      const endpointValue = endpointInput.value.trim();
-
-      if (!labelValue || !endpointValue) {
-        alert("Please enter both a label and an endpoint URL.");
-        return;
-      }
-
-      // Add to persistent config
-      const currentButtons = this.tab.yasgui.persistentConfig.getCustomEndpointButtons();
-      currentButtons.push({ label: labelValue, endpoint: endpointValue });
-      this.tab.yasgui.persistentConfig.setCustomEndpointButtons(currentButtons);
-
-      // Clear inputs
-      labelInput.value = "";
-      endpointInput.value = "";
-
-      // Refresh list
-      this.renderEndpointButtonsList(buttonsList);
-    };
-
-    addForm.appendChild(labelInput);
-    addForm.appendChild(endpointInput);
-    addForm.appendChild(addButton);
-    section.appendChild(addForm);
-
-    container.appendChild(section);
-  }
-
-  private renderEndpointButtonsList(container: HTMLElement) {
-    container.innerHTML = "";
-    const customButtons = this.tab.yasgui.persistentConfig.getCustomEndpointButtons();
-
-    if (customButtons.length === 0) {
-      const emptyMsg = document.createElement("div");
-      emptyMsg.textContent = "No custom buttons yet. Add one below.";
-      addClass(emptyMsg, "emptyMessage");
-      container.appendChild(emptyMsg);
-      return;
-    }
-
-    customButtons.forEach((btn, index) => {
-      const item = document.createElement("div");
-      addClass(item, "endpointButtonItem");
-
-      const labelSpan = document.createElement("span");
-      labelSpan.textContent = `${btn.label}`;
-      addClass(labelSpan, "buttonLabel");
-
-      const endpointSpan = document.createElement("span");
-      endpointSpan.textContent = btn.endpoint;
-      addClass(endpointSpan, "buttonEndpoint");
-
-      const removeBtn = document.createElement("button");
-      removeBtn.textContent = "×";
-      addClass(removeBtn, "removeButton");
-      removeBtn.type = "button";
-      removeBtn.onclick = () => {
-        const currentButtons = this.tab.yasgui.persistentConfig.getCustomEndpointButtons();
-        currentButtons.splice(index, 1);
-        this.tab.yasgui.persistentConfig.setCustomEndpointButtons(currentButtons);
-        this.renderEndpointButtonsList(container);
-      };
-
-      item.appendChild(labelSpan);
-      item.appendChild(endpointSpan);
-      item.appendChild(removeBtn);
-      container.appendChild(item);
-    });
-  }
+  // Old endpoint buttons functionality has been merged into drawEndpointsSettings
+  // Keeping this for reference if needed for backwards compatibility
 
   private getThemeToggleIcon(): string {
     const currentTheme = this.tab.yasgui.getTheme();

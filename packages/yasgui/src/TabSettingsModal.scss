@@ -683,3 +683,244 @@
     }
   }
 }
+
+// Endpoints table styling
+.endpointsTable {
+  margin-top: 20px;
+}
+
+.endpointsTableElement {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--yasgui-border-color, #e0e0e0);
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--yasgui-text-primary, #000);
+    background: var(--yasgui-bg-secondary, #f9f9f9);
+  }
+
+  td {
+    color: var(--yasgui-text-primary, #333);
+  }
+
+  .endpointCell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .centerCell {
+    text-align: center;
+  }
+
+  .endpointLabelInput {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--yasgui-input-border, #ddd);
+    border-radius: 4px;
+    background: var(--yasgui-bg-primary, white);
+    color: var(--yasgui-text-primary, #333);
+    font-size: 14px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--yasgui-accent-color, #337ab7);
+    }
+  }
+
+  .configureAuthButton {
+    padding: 6px 12px;
+    border: 1px solid var(--yasgui-border-color, #ddd);
+    border-radius: 4px;
+    background: var(--yasgui-bg-primary, white);
+    color: var(--yasgui-text-primary, #333);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--yasgui-bg-secondary, #f5f5f5);
+    }
+
+    &.authenticated {
+      background: var(--yasgui-success-bg, #d4edda);
+      color: var(--yasgui-success-text, #155724);
+      border-color: var(--yasgui-success-border, #c3e6cb);
+    }
+  }
+
+  .deleteEndpointButton {
+    padding: 6px 12px;
+    border: 1px solid var(--yasgui-error-border, #f5c6cb);
+    border-radius: 4px;
+    background: var(--yasgui-error-bg, #f8d7da);
+    color: var(--yasgui-error-text, #721c24);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--yasgui-error-hover, #f1b0b7);
+    }
+  }
+}
+
+// Authentication modal styling
+.authModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.authModal {
+  background: var(--yasgui-bg-primary, white);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.authModalHeader {
+  padding: 20px;
+  border-bottom: 1px solid var(--yasgui-border-color, #e0e0e0);
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--yasgui-text-primary, #000);
+  }
+}
+
+.authModalSubtitle {
+  font-size: 13px;
+  color: var(--yasgui-text-secondary, #666);
+  word-break: break-all;
+}
+
+.authModalBody {
+  padding: 20px;
+}
+
+.authModalSection {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--yasgui-text-primary, #333);
+    margin-bottom: 8px;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--yasgui-input-border, #ddd);
+    border-radius: 4px;
+    background: var(--yasgui-bg-primary, white);
+    color: var(--yasgui-text-primary, #333);
+    font-size: 14px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--yasgui-accent-color, #337ab7);
+      box-shadow: 0 0 0 3px var(--yasgui-accent-light, rgba(51, 122, 183, 0.1));
+    }
+  }
+}
+
+.authSecurityNotice {
+  padding: 12px;
+  background: var(--yasgui-warning-bg, #fff3cd);
+  border: 1px solid var(--yasgui-warning-border, #ffeaa7);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--yasgui-warning-text, #856404);
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+
+    li {
+      margin: 4px 0;
+    }
+  }
+}
+
+.authModalFooter {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid var(--yasgui-border-color, #e0e0e0);
+  justify-content: flex-end;
+
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+
+    &.authRemoveButton {
+      background: transparent;
+      color: var(--yasgui-error-text, #dc3545);
+      border: 1px solid var(--yasgui-error-border, #dc3545);
+      margin-right: auto;
+
+      &:hover:not(:disabled) {
+        background: var(--yasgui-error-bg, #f8d7da);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+
+    &.authCancelButton {
+      background: var(--yasgui-bg-secondary, #f5f5f5);
+      color: var(--yasgui-text-primary, #333);
+      border: 1px solid var(--yasgui-border-color, #ddd);
+
+      &:hover {
+        background: var(--yasgui-bg-tertiary, #e0e0e0);
+      }
+    }
+
+    &.authSaveButton {
+      background: var(--yasgui-accent-color, #337ab7);
+      color: white;
+
+      &:hover {
+        background: var(--yasgui-accent-dark, #2563a1);
+      }
+    }
+  }
+}

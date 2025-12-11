@@ -359,10 +359,19 @@ export class Tab extends EventEmitter {
     // Clear existing buttons
     this.endpointButtonsContainer.innerHTML = "";
 
-    // Merge config buttons with custom user buttons
+    // Get config buttons (for backwards compatibility)
     const configButtons = this.yasgui.config.endpointButtons || [];
+
+    // Get endpoint configs where showAsButton is true
+    const endpointConfigs = this.yasgui.persistentConfig.getEndpointConfigs();
+    const endpointButtons = endpointConfigs
+      .filter((config) => config.showAsButton && config.label)
+      .map((config) => ({ endpoint: config.endpoint, label: config.label! }));
+
+    // Also include legacy custom buttons for backwards compatibility
     const customButtons = this.yasgui.persistentConfig.getCustomEndpointButtons();
-    const allButtons = [...configButtons, ...customButtons];
+
+    const allButtons = [...configButtons, ...endpointButtons, ...customButtons];
 
     if (allButtons.length === 0) {
       // Hide container if no buttons
@@ -413,7 +422,7 @@ export class Tab extends EventEmitter {
       this.persistentJson.requestConfig.endpoint = endpoint;
       this.emit("change", this, this.persistentJson);
       this.emit("endpointChange", this, endpoint);
-      
+
       // Auto-track this endpoint in endpoint configs (if not already present)
       if (endpoint && !this.yasgui.persistentConfig.getEndpointConfig(endpoint)) {
         this.yasgui.persistentConfig.addOrUpdateEndpoint(endpoint, {});
@@ -468,7 +477,7 @@ export class Tab extends EventEmitter {
 
     this.emit("change", this, this.persistentJson);
   }
-  
+
   /**
    * Get authentication configuration for the current endpoint
    * This retrieves auth from the endpoint-based storage
@@ -476,18 +485,18 @@ export class Tab extends EventEmitter {
   private getAuthForCurrentEndpoint() {
     const endpoint = this.getEndpoint();
     if (!endpoint) return undefined;
-    
+
     const endpointConfig = this.yasgui.persistentConfig.getEndpointConfig(endpoint);
     if (!endpointConfig || !endpointConfig.authentication) return undefined;
-    
+
     // Convert endpoint auth to requestConfig format
-    if (endpointConfig.authentication.type === 'basic') {
+    if (endpointConfig.authentication.type === "basic") {
       return {
         username: endpointConfig.authentication.username,
-        password: endpointConfig.authentication.password
+        password: endpointConfig.authentication.password,
       };
     }
-    
+
     return undefined;
   }
 
@@ -551,13 +560,13 @@ export class Tab extends EventEmitter {
           //The adjustQueryBeforeRequest is meant to be a function though, so let's copy that as is
           adjustQueryBeforeRequest: this.yasgui.config.requestConfig.adjustQueryBeforeRequest,
         };
-        
+
         // Inject authentication from endpoint-based storage
         const endpointAuth = this.getAuthForCurrentEndpoint();
         if (endpointAuth) {
           processedReqConfig.basicAuth = endpointAuth;
         }
-        
+
         if (this.yasgui.config.corsProxy && !Yasgui.corsEnabled[this.getEndpoint()]) {
           return {
             ...processedReqConfig,
