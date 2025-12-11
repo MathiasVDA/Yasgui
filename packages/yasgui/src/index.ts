@@ -38,13 +38,23 @@ export interface EndpointButton {
 
 export interface EndpointConfig {
   endpoint: string;
-  label?: string;  // Optional label for the endpoint
-  showAsButton?: boolean;  // Whether to show as a quick-switch button (requires label)
-  authentication?: {
-    type: 'basic';  // For now only basic, but designed for future auth types
-    username: string;
-    password: string;
-  };
+  label?: string; // Optional label for the endpoint
+  showAsButton?: boolean; // Whether to show as a quick-switch button (requires label)
+  authentication?:
+    | {
+        type: "basic";
+        username: string;
+        password: string;
+      }
+    | {
+        type: "bearer";
+        token: string;
+      }
+    | {
+        type: "apiKey";
+        headerName: string;
+        apiKey: string;
+      };
 }
 export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   /**

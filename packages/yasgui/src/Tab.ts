@@ -490,10 +490,29 @@ export class Tab extends EventEmitter {
     if (!endpointConfig || !endpointConfig.authentication) return undefined;
 
     // Convert endpoint auth to requestConfig format
-    if (endpointConfig.authentication.type === "basic") {
+    const auth = endpointConfig.authentication;
+    if (auth.type === "basic") {
       return {
-        username: endpointConfig.authentication.username,
-        password: endpointConfig.authentication.password,
+        type: "basic" as const,
+        config: {
+          username: auth.username,
+          password: auth.password,
+        },
+      };
+    } else if (auth.type === "bearer") {
+      return {
+        type: "bearer" as const,
+        config: {
+          token: auth.token,
+        },
+      };
+    } else if (auth.type === "apiKey") {
+      return {
+        type: "apiKey" as const,
+        config: {
+          headerName: auth.headerName,
+          apiKey: auth.apiKey,
+        },
       };
     }
 
@@ -562,10 +581,16 @@ export class Tab extends EventEmitter {
         };
 
         // Inject authentication from endpoint-based storage
-        // Only inject endpoint-based auth if basicAuth is not already set
+        // Only inject endpoint-based auth if the corresponding auth type is not already set
         const endpointAuth = this.getAuthForCurrentEndpoint();
-        if (endpointAuth && typeof processedReqConfig.basicAuth === "undefined") {
-          processedReqConfig.basicAuth = endpointAuth;
+        if (endpointAuth) {
+          if (endpointAuth.type === "basic" && typeof processedReqConfig.basicAuth === "undefined") {
+            processedReqConfig.basicAuth = endpointAuth.config;
+          } else if (endpointAuth.type === "bearer" && typeof processedReqConfig.bearerAuth === "undefined") {
+            processedReqConfig.bearerAuth = endpointAuth.config;
+          } else if (endpointAuth.type === "apiKey" && typeof processedReqConfig.apiKeyAuth === "undefined") {
+            processedReqConfig.apiKeyAuth = endpointAuth.config;
+          }
         }
 
         if (this.yasgui.config.corsProxy && !Yasgui.corsEnabled[this.getEndpoint()]) {

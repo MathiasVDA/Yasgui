@@ -80,9 +80,41 @@ export function getAjaxConfig(
   // console.log({headers})
   const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
 
-  // Add Basic Authentication header if configured
+  // Add Authentication headers if configured
   const finalHeaders = { ...headers };
   try {
+    // Check for Bearer Token authentication
+    const bearerAuth = isFunction(config.bearerAuth) ? config.bearerAuth(yasqe) : config.bearerAuth;
+    const trimmedBearerToken = bearerAuth && bearerAuth.token ? bearerAuth.token.trim() : "";
+    if (bearerAuth && trimmedBearerToken.length > 0) {
+      if (finalHeaders["Authorization"] !== undefined) {
+        console.warn(
+          "Authorization header already exists in request headers; skipping Bearer Auth header to avoid overwrite.",
+        );
+      } else {
+        finalHeaders["Authorization"] = `Bearer ${trimmedBearerToken}`;
+      }
+    }
+
+    // Check for API Key authentication
+    const apiKeyAuth = isFunction(config.apiKeyAuth) ? config.apiKeyAuth(yasqe) : config.apiKeyAuth;
+    const trimmedHeaderName = apiKeyAuth && apiKeyAuth.headerName ? apiKeyAuth.headerName.trim() : "";
+    const trimmedApiKey = apiKeyAuth && apiKeyAuth.apiKey ? apiKeyAuth.apiKey.trim() : "";
+    if (
+      apiKeyAuth &&
+      trimmedHeaderName.length > 0 &&
+      trimmedApiKey.length > 0
+    ) {
+      if (finalHeaders[trimmedHeaderName] !== undefined) {
+        console.warn(
+          `Header "${trimmedHeaderName}" already exists in request headers; skipping API Key header to avoid overwrite.`,
+        );
+      } else {
+        finalHeaders[trimmedHeaderName] = trimmedApiKey;
+      }
+    }
+
+    // Check for Basic Authentication (lowest priority)
     const basicAuth = isFunction(config.basicAuth) ? config.basicAuth(yasqe) : config.basicAuth;
     if (basicAuth && basicAuth.username && basicAuth.password) {
       if (finalHeaders["Authorization"] !== undefined) {
@@ -94,7 +126,7 @@ export function getAjaxConfig(
       }
     }
   } catch (error) {
-    console.warn("Failed to configure basic authentication:", error);
+    console.warn("Failed to configure authentication:", error);
     // Continue without authentication if there's an error
   }
 

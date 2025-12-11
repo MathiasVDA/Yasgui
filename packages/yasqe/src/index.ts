@@ -1365,6 +1365,14 @@ export interface BasicAuthConfig {
   username: string;
   password: string;
 }
+export interface BearerAuthConfig {
+  token: string;
+}
+export interface ApiKeyAuthConfig {
+  headerName: string;
+  apiKey: string;
+}
+export type AuthConfig = BasicAuthConfig | BearerAuthConfig | ApiKeyAuthConfig;
 export interface RequestConfig<Y> {
   queryArgument: string | ((yasqe: Y) => string) | undefined;
   endpoint: string | ((yasqe: Y) => string);
@@ -1379,6 +1387,8 @@ export interface RequestConfig<Y> {
   withCredentials: boolean | ((yasqe: Y) => boolean);
   adjustQueryBeforeRequest: ((yasqe: Y) => string) | false;
   basicAuth: BasicAuthConfig | ((yasqe: Y) => BasicAuthConfig | undefined) | undefined;
+  bearerAuth: BearerAuthConfig | ((yasqe: Y) => BearerAuthConfig | undefined) | undefined;
+  apiKeyAuth: ApiKeyAuthConfig | ((yasqe: Y) => ApiKeyAuthConfig | undefined) | undefined;
 }
 export type PlainRequestConfig = {
   [K in keyof RequestConfig<any>]: Exclude<RequestConfig<any>[K], Function>;
