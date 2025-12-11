@@ -51,7 +51,9 @@ function base64EncodeUnicode(str: string): string {
     try {
       return btoa(str);
     } catch (e) {
-      throw new Error("Basic authentication credentials contain unsupported Unicode characters. Please use a modern browser or restrict credentials to Latin1 characters.");
+      throw new Error(
+        "Basic authentication credentials contain unsupported Unicode characters. Please use a modern browser or restrict credentials to Latin1 characters.",
+      );
     }
   }
 }
@@ -83,7 +85,13 @@ export function getAjaxConfig(
   try {
     const basicAuth = isFunction(config.basicAuth) ? config.basicAuth(yasqe) : config.basicAuth;
     if (basicAuth && basicAuth.username && basicAuth.password) {
-      finalHeaders["Authorization"] = createBasicAuthHeader(basicAuth.username, basicAuth.password);
+      if (finalHeaders["Authorization"] !== undefined) {
+        console.warn(
+          "Authorization header already exists in request headers; skipping Basic Auth header to avoid overwrite.",
+        );
+      } else {
+        finalHeaders["Authorization"] = createBasicAuthHeader(basicAuth.username, basicAuth.password);
+      }
     }
   } catch (error) {
     console.warn("Failed to configure basic authentication:", error);

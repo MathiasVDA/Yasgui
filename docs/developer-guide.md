@@ -1058,53 +1058,77 @@ const yasgui = new Yasgui(document.getElementById("yasgui"), {
 });
 ```
 
-**Example 2: Multiple Tabs with Different Credentials**
+**Example 2: Multiple Endpoints with Different Credentials**
+
+Authentication is stored **per-endpoint**, not per-tab. All tabs using the same endpoint will share the same credentials.
 
 ```javascript
 const yasgui = new Yasgui(document.getElementById("yasgui"));
 
-// Tab 1 - Public endpoint (no auth)
-const tab1 = yasgui.addTab();
-tab1.setRequestConfig({
-  endpoint: "https://dbpedia.org/sparql",
-  basicAuth: undefined
+// Configure authentication for first endpoint
+yasgui.persistentConfig.addOrUpdateEndpoint("https://dbpedia.org/sparql", {
+  // No authentication needed for public endpoint
 });
 
-// Tab 2 - Private endpoint (with auth)
-const tab2 = yasgui.addTab();
-tab2.setRequestConfig({
-  endpoint: "https://private.example.com/sparql",
-  basicAuth: {
+// Configure authentication for second endpoint
+yasgui.persistentConfig.addOrUpdateEndpoint("https://private.example.com/sparql", {
+  authentication: {
+    type: "basic",
     username: "admin",
     password: "secret"
   }
 });
+
+// Create tabs - they will automatically use endpoint-based auth
+const tab1 = yasgui.addTab();
+tab1.setRequestConfig({ endpoint: "https://dbpedia.org/sparql" });
+
+const tab2 = yasgui.addTab();
+tab2.setRequestConfig({ endpoint: "https://private.example.com/sparql" });
+
+// Both tabs pointing to the same endpoint will share credentials
+const tab3 = yasgui.addTab();
+tab3.setRequestConfig({ endpoint: "https://private.example.com/sparql" }); // Uses same auth as tab2
 ```
 
 **Example 3: Prompt User for Credentials**
+
+⚠️ **Security Warning**: Storing credentials in localStorage exposes them to any script running on the same origin (e.g., XSS attacks or malicious third-party scripts). For production use:
+- Use session-based authentication with short-lived tokens
+- Consider OAuth 2.0 or other secure authentication flows
+- Avoid storing reusable passwords in browser storage
+- Only use HTTPS endpoints
 
 ```javascript
 const yasgui = new Yasgui(document.getElementById("yasgui"), {
   requestConfig: {
     endpoint: "https://secure-endpoint.example.com/sparql",
     basicAuth: (yasqe) => {
-      // Only prompt if credentials aren't already stored
-      const stored = localStorage.getItem("sparql_credentials");
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      // WARNING: This example stores credentials in localStorage for demonstration only.
+      // In production, use more secure alternatives (session tokens, OAuth, etc.)
       
       const username = prompt("Enter username:");
       const password = prompt("Enter password:");
       
       if (username && password) {
-        const credentials = { username, password };
-        localStorage.setItem("sparql_credentials", JSON.stringify(credentials));
-        return credentials;
+        return { username, password };
       }
       
       return undefined;
     }
+  }
+});
+```
+
+**Recommended Approach**: Use endpoint-based authentication via the UI or configure it once programmatically:
+
+```javascript
+// Configure authentication securely
+yasgui.persistentConfig.addOrUpdateEndpoint("https://secure-endpoint.example.com/sparql", {
+  authentication: {
+    type: "basic",
+    username: "user",
+    password: "pass"  // Consider using environment variables or secure credential management
   }
 });
 ```

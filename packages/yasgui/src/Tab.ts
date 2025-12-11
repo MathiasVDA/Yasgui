@@ -562,8 +562,9 @@ export class Tab extends EventEmitter {
         };
 
         // Inject authentication from endpoint-based storage
+        // Only inject endpoint-based auth if basicAuth is not already set
         const endpointAuth = this.getAuthForCurrentEndpoint();
-        if (endpointAuth) {
+        if (endpointAuth && typeof processedReqConfig.basicAuth === "undefined") {
           processedReqConfig.basicAuth = endpointAuth;
         }
 

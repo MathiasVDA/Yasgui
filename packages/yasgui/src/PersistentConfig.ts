@@ -10,8 +10,8 @@ export interface PersistedJson {
   lastClosedTab: { index: number; tab: Tab.PersistedJson } | undefined;
   prefixes?: string;
   autoCaptureEnabled?: boolean;
-  customEndpointButtons?: EndpointButton[];  // Legacy, kept for backwards compatibility
-  endpointConfigs?: EndpointConfig[];  // New endpoint-based storage with auth
+  customEndpointButtons?: EndpointButton[]; // Legacy, kept for backwards compatibility
+  endpointConfigs?: EndpointConfig[]; // New endpoint-based storage with auth
   theme?: "light" | "dark";
   orientation?: "vertical" | "horizontal";
 }
@@ -165,40 +165,44 @@ export default class PersistentConfig {
     this.persistedJson.customEndpointButtons = buttons;
     this.toStorage();
   }
-  
+
   // New endpoint configuration methods
   public getEndpointConfigs(): EndpointConfig[] {
     return this.persistedJson.endpointConfigs || [];
   }
-  
+
   public setEndpointConfigs(configs: EndpointConfig[]) {
     this.persistedJson.endpointConfigs = configs;
     this.toStorage();
   }
-  
-  public addOrUpdateEndpoint(endpoint: string, updates: Partial<Omit<EndpointConfig, 'endpoint'>>) {
+
+  public addOrUpdateEndpoint(endpoint: string, updates: Partial<Omit<EndpointConfig, "endpoint">>) {
     const configs = this.getEndpointConfigs();
-    const existingIndex = configs.findIndex(c => c.endpoint === endpoint);
-    
+    const existingIndex = configs.findIndex((c) => c.endpoint === endpoint);
+
     if (existingIndex >= 0) {
       // Update existing endpoint
-      configs[existingIndex] = { ...configs[existingIndex], ...updates };
+      const merged = { ...configs[existingIndex], ...updates };
+      if ("authentication" in updates && updates.authentication === undefined) {
+        delete merged.authentication;
+      }
+      configs[existingIndex] = merged;
     } else {
       // Add new endpoint
       configs.push({ endpoint, ...updates });
     }
-    
+
     this.setEndpointConfigs(configs);
   }
-  
+
   public getEndpointConfig(endpoint: string): EndpointConfig | undefined {
     const configs = this.getEndpointConfigs();
-    return configs.find(c => c.endpoint === endpoint);
+    return configs.find((c) => c.endpoint === endpoint);
   }
-  
+
   public deleteEndpointConfig(endpoint: string) {
     const configs = this.getEndpointConfigs();
-    const filtered = configs.filter(c => c.endpoint !== endpoint);
+    const filtered = configs.filter((c) => c.endpoint !== endpoint);
     this.setEndpointConfigs(filtered);
   }
   public static clear() {

@@ -537,6 +537,10 @@ export default class TabSettingsModal {
       buttonCheckbox.type = "checkbox";
       buttonCheckbox.checked = !!config.showAsButton;
       buttonCheckbox.disabled = !config.label;
+      buttonCheckbox.setAttribute(
+        "aria-label",
+        config.label ? "Show this endpoint as a quick-switch button" : "Add a label first to enable button",
+      );
       buttonCheckbox.title = config.label
         ? "Show this endpoint as a quick-switch button"
         : "Add a label first to enable button";
@@ -628,11 +632,7 @@ export default class TabSettingsModal {
         new URL(endpoint);
       } catch (e) {
         // Show the error message if available, otherwise a generic one
-        alert(
-          e instanceof Error && e.message
-            ? "Malformed URL: " + e.message
-            : "Please enter a valid URL."
-        );
+        alert(e instanceof Error && e.message ? "Malformed URL: " + e.message : "Please enter a valid URL.");
         return;
       }
 
