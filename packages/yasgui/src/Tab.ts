@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { addClass, removeClass, getAsValue } from "@matdata/yasgui-utils";
+import { addClass, removeClass, getAsValue, isNetworkError } from "@matdata/yasgui-utils";
 import { TabListEl } from "./TabElements";
 import TabSettingsModal from "./TabSettingsModal";
 import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@matdata/yasqe";
@@ -1061,14 +1061,7 @@ function getCorsErrorRenderer(tab: Tab) {
         new URL(tab.getEndpoint()).protocol === "http:" && window.location.protocol === "https:";
 
       // Check if this looks like a network error (not just missing status)
-      const isNetworkError =
-        !error.text ||
-        error.text.indexOf("Request has been terminated") >= 0 ||
-        error.text.indexOf("Failed to fetch") >= 0 ||
-        error.text.indexOf("NetworkError") >= 0 ||
-        error.text.indexOf("Network request failed") >= 0;
-
-      if (shouldReferToHttp && isNetworkError) {
+      if (shouldReferToHttp && isNetworkError(error.text)) {
         const errorEl = document.createElement("div");
         const errorSpan = document.createElement("p");
         errorSpan.innerHTML = `You are trying to query an HTTP endpoint (<a href="${safeEndpoint(

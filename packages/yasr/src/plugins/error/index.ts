@@ -3,7 +3,7 @@
  */
 import { Plugin } from "../";
 import Yasr from "../../";
-import { addClass } from "@matdata/yasgui-utils";
+import { addClass, isNetworkError } from "@matdata/yasgui-utils";
 import "./index.scss";
 
 export default class Error implements Plugin<never> {
@@ -265,14 +265,7 @@ export default class Error implements Plugin<never> {
       }
       // Only show CORS message for network failures (not for HTTP errors with status codes)
       // Common network error indicators: terminated requests, fetch failures, no error text
-      const isNetworkError =
-        !error.text ||
-        error.text.indexOf("Request has been terminated") >= 0 ||
-        error.text.indexOf("Failed to fetch") >= 0 ||
-        error.text.indexOf("NetworkError") >= 0 ||
-        error.text.indexOf("Network request failed") >= 0;
-
-      if (isNetworkError) {
+      if (isNetworkError(error.text)) {
         el.appendChild(this.getCorsMessage());
       } else {
         const errTextEl = document.createElement("pre");

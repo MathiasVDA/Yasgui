@@ -1,6 +1,7 @@
 import { default as Yasqe, Config, RequestConfig } from "./";
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
+import { isNetworkError } from "@matdata/yasgui-utils";
 export type YasqeAjaxConfig = Config["requestConfig"];
 export interface PopulatedAjaxConfig {
   url: string;
@@ -225,7 +226,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
       if (e instanceof Error && !("status" in e)) {
         // Enhance the error with additional context for common fetch failures
         const enhancedError: any = e;
-        if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
+        if (isNetworkError(e.message)) {
           enhancedError.message = `${e.message}. The server may have returned an error response (check browser dev tools), but CORS headers are preventing JavaScript from accessing it. Ensure the endpoint returns proper CORS headers even for error responses (Access-Control-Allow-Origin, etc.).`;
         }
         yasqe.emit("queryResponse", enhancedError, Date.now() - queryStart);
