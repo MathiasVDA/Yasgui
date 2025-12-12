@@ -67,13 +67,14 @@ export function getAsValue<E, A>(valueOrFn: E | ((arg: A) => E), arg: A): E {
  * Common network error indicators include: terminated requests, fetch failures, and generic network errors.
  * @param errorText - The error message text to check
  * @returns true if the error appears to be a network failure, false otherwise
+ * @remarks Returns true for empty/undefined error text as network errors often have no message
  */
 export function isNetworkError(errorText: string | undefined): boolean {
   if (!errorText) return true;
   return (
-    errorText.indexOf("Request has been terminated") >= 0 ||
-    errorText.indexOf("Failed to fetch") >= 0 ||
-    errorText.indexOf("NetworkError") >= 0 ||
-    errorText.indexOf("Network request failed") >= 0
+    errorText.includes("Request has been terminated") ||
+    errorText.includes("Failed to fetch") ||
+    errorText.includes("NetworkError") ||
+    errorText.includes("Network request failed")
   );
 }
