@@ -91,6 +91,63 @@ YASGUI automatically saves:
 
 Your work persists across browser sessions on the same device.
 
+### Querying Local Endpoints
+
+YASGUI can query SPARQL endpoints running on your local machine (e.g., Apache Jena Fuseki, GraphDB). However, browsers require special permission to access local servers from web applications.
+
+**Steps to Query Local Endpoints:**
+
+1. **Enter Local Endpoint URL**: Add your local endpoint to the endpoint input box
+   - Example: `http://localhost:3030/g/`
+   - Example: `http://127.0.0.1:3030/dataset/query`
+
+2. **Execute Your Query**: Click Execute or press `Ctrl+Enter`
+
+3. **Grant Browser Permission**: Your browser will show a permission request to access the local endpoint
+
+   **In Microsoft Edge:**
+   
+   ![Permission request dialog](img/local_endpoint_msedge_permission_request.png)
+   
+   - Click **"Allow"** to grant permission
+   - The permission applies for the domain on which you run yasgui (for example https://yasgui.matdata.eu/)
+
+4. **If You Blocked the Request**: You can change the permission later
+
+   ![Change permission settings](img/local_endpoint_msedge_permission_change.png)
+   
+   - Click the lock icon in the address bar
+   - Find the "Local network access" or similar setting
+   - Change it to "Allow"
+   - Execute the query again
+
+5. **Permission Denied Error**: If same-origin policy was not accepted, you'll see an error
+
+   ![Permission denied error](img/local_endpoint_msedge_error.png)
+   
+   - Follow step 4 to grant permission
+   - Re-execute your query
+
+**Other Browsers:**
+
+The process is similar in Chrome, Firefox, and Safari:
+- Chrome: the same as Edge (verified by author)
+- Firefox: May require setting `security.mixed_content.block_active_content` to false in about:config (unverified by author)
+- Safari: Check "Disable local file restrictions" in Develop menu (unverified by author)
+- Vivaldi: the same as Edge (verified by author)
+
+**Important Notes:**
+- Permission is required because YASGUI is served over HTTPS while your local endpoint uses HTTP
+- This is a browser security feature to protect against mixed content attacks
+- You'll need to grant permission once and it should apply for all browser session (when you don't clear cache & settings)
+- Consider using HTTPS for your local endpoint for automatic permission
+
+**Troubleshooting Local Endpoints:**
+- Ensure your local SPARQL server is running before querying
+- Check that the port number is correct (e.g., 3030, 3333, 7200)
+- Verify the endpoint path matches your server configuration
+- See [Troubleshooting - Local Endpoint Issues](#local-endpoint-issues) for more help
+
 ---
 
 ## Components Overview
@@ -890,6 +947,37 @@ CORS (Cross-Origin Resource Sharing) is a browser security feature. Some SPARQL 
 2. **Use CORS Proxy**: Configure a CORS proxy in YASGUI settings (if provided by administrator)
 3. **Use Desktop/Server Version**: Run YASGUI locally or server-side where CORS doesn't apply
 4. **Server-Side Proxy**: Query through a backend service
+
+#### Local Endpoint Issues
+
+**Symptoms:**
+- Cannot connect to localhost or 127.0.0.1 endpoints
+- "Mixed content blocked" or similar errors
+- Permission denied when querying local server
+
+**Explanation:**
+Browsers block HTTP requests to local endpoints from HTTPS pages (mixed content policy). This is a security feature to prevent malicious websites from accessing your local services.
+
+**Solutions:**
+1. **Grant Browser Permission**: 
+   - Click "Allow" when the browser prompts for permission
+   - See [Querying Local Endpoints](#querying-local-endpoints) for detailed instructions with screenshots
+2. **Check Permission Settings**:
+   - Click the lock/info icon in the address bar
+   - Find "Insecure content" or "Mixed content" setting
+   - Change to "Allow" and reload
+3. **Verify Local Server is Running**:
+   - Open `http://localhost:PORT/` in a new tab
+   - Ensure you see your SPARQL endpoint's interface
+4. **Check Port Number**: Common SPARQL ports are 3030 (Fuseki), 7200 (GraphDB), 3333 (Blazegraph)
+5. **Try 127.0.0.1**: If `localhost` doesn't work, try `http://127.0.0.1:PORT/`
+6. **Enable CORS on Local Server**: Configure your SPARQL server to allow CORS requests
+7. **Use HTTPS for Local Endpoint**: Set up SSL/TLS on your local server (advanced)
+
+**Browser-Specific Notes:**
+- **Edge/Chrome/Vivaldi**: Look for shield icon in address bar to manage blocked content
+- **Firefox**: May need to adjust `security.mixed_content.block_active_content` in about:config
+- **Safari**: Enable "Disable local file restrictions" in Develop menu
 
 #### Slow Queries
 
