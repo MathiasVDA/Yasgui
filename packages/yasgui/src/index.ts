@@ -64,7 +64,6 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   endpointInfo: ((tab?: Tab) => Element) | undefined;
   copyEndpointOnNewTab: boolean;
   tabName: string;
-  corsProxy: string | undefined;
   endpointCatalogueOptions: EndpointSelectConfig<EndpointObject>;
   endpointButtons?: EndpointButton[];
   //The function allows us to modify the config before we pass it on to a tab
@@ -78,7 +77,6 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   yasr: YasrConfig;
   requestConfig: YasguiRequestConfig;
   contextMenuContainer: HTMLElement | undefined;
-  nonSslDomain?: string;
   theme?: Theme;
   showThemeToggle?: boolean;
   /**
@@ -426,7 +424,6 @@ export class Yasgui extends EventEmitter {
   public static Yasr = Yasr;
   public static Yasqe = Yasqe;
   public static defaults = initializeDefaults();
-  public static corsEnabled: { [endpoint: string]: boolean } = {};
 }
 
 export function getRandomId() {

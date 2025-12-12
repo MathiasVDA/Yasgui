@@ -22,7 +22,6 @@ export default function initialize(): Config<CatalogueItem> {
       return "yagui_" + id;
     },
     tabName: "Query",
-    corsProxy: undefined,
     persistencyExpire: 60 * 60 * 24 * 30,
     persistenceLabelResponse: "response",
     persistenceLabelConfig: "config",

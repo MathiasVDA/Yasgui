@@ -417,26 +417,11 @@ export class Tab extends EventEmitter {
     });
   }
 
-  private checkEndpointForCors(endpoint: string) {
-    if (this.yasgui.config.corsProxy && !(endpoint in Yasgui.corsEnabled)) {
-      const askUrl = new URL(endpoint);
-      askUrl.searchParams.append("query", "ASK {?x ?y ?z}");
-      fetch(askUrl.toString())
-        .then(() => {
-          Yasgui.corsEnabled[endpoint] = true;
-        })
-        .catch((e) => {
-          // CORS error throws `TypeError: NetworkError when attempting to fetch resource.`
-          Yasgui.corsEnabled[endpoint] = e instanceof TypeError ? false : true;
-        });
-    }
-  }
   public setEndpoint(endpoint: string, endpointHistory?: string[]) {
     if (endpoint) endpoint = endpoint.trim();
     if (endpointHistory && !eq(endpointHistory, this.yasgui.persistentConfig.getEndpointHistory())) {
       this.yasgui.emit("endpointHistoryChange", this.yasgui, endpointHistory);
     }
-    this.checkEndpointForCors(endpoint); //little cost in checking this as we're caching the check results
 
     if (this.persistentJson.requestConfig.endpoint !== endpoint) {
       this.persistentJson.requestConfig.endpoint = endpoint;
@@ -622,18 +607,6 @@ export class Tab extends EventEmitter {
           }
         }
 
-        if (this.yasgui.config.corsProxy && !Yasgui.corsEnabled[this.getEndpoint()]) {
-          return {
-            ...processedReqConfig,
-            args: [
-              ...(Array.isArray(processedReqConfig.args) ? processedReqConfig.args : []),
-              { name: "endpoint", value: this.getEndpoint() },
-              { name: "method", value: this.persistentJson.requestConfig.method },
-            ],
-            method: "POST",
-            endpoint: this.yasgui.config.corsProxy,
-          } as PlainRequestConfig;
-        }
         return processedReqConfig as PlainRequestConfig;
       },
     };
@@ -820,7 +793,52 @@ WHERE {
 
       const endpoint = typeof config.endpoint === "function" ? config.endpoint(this.yasqe) : config.endpoint;
       const method = typeof config.method === "function" ? config.method(this.yasqe) : config.method || "POST";
-      const headers = typeof config.headers === "function" ? config.headers(this.yasqe) : config.headers || {};
+      let headers = typeof config.headers === "function" ? config.headers(this.yasqe) : config.headers || {};
+      const withCredentials =
+        typeof config.withCredentials === "function" ? config.withCredentials(this.yasqe) : config.withCredentials;
+
+      // Process authentication and add to headers
+      const finalHeaders = { ...headers };
+      let hasAuthConfigured = false;
+
+      try {
+        // Check for Bearer Token authentication
+        const bearerAuth = typeof config.bearerAuth === "function" ? config.bearerAuth(this.yasqe) : config.bearerAuth;
+        const trimmedBearerToken = bearerAuth && bearerAuth.token ? bearerAuth.token.trim() : "";
+        if (bearerAuth && trimmedBearerToken.length > 0) {
+          hasAuthConfigured = true;
+          if (finalHeaders["Authorization"] === undefined) {
+            finalHeaders["Authorization"] = `Bearer ${trimmedBearerToken}`;
+          }
+        }
+
+        // Check for API Key authentication
+        const apiKeyAuth = typeof config.apiKeyAuth === "function" ? config.apiKeyAuth(this.yasqe) : config.apiKeyAuth;
+        const trimmedHeaderName = apiKeyAuth && apiKeyAuth.headerName ? apiKeyAuth.headerName.trim() : "";
+        const trimmedApiKey = apiKeyAuth && apiKeyAuth.apiKey ? apiKeyAuth.apiKey.trim() : "";
+        if (apiKeyAuth && trimmedHeaderName.length > 0 && trimmedApiKey.length > 0) {
+          hasAuthConfigured = true;
+          if (finalHeaders[trimmedHeaderName] === undefined) {
+            finalHeaders[trimmedHeaderName] = trimmedApiKey;
+          }
+        }
+
+        // Check for Basic Authentication
+        const basicAuth = typeof config.basicAuth === "function" ? config.basicAuth(this.yasqe) : config.basicAuth;
+        if (basicAuth && basicAuth.username && basicAuth.password) {
+          hasAuthConfigured = true;
+          if (finalHeaders["Authorization"] === undefined) {
+            const credentials = `${basicAuth.username}:${basicAuth.password}`;
+            const encoded = btoa(unescape(encodeURIComponent(credentials)));
+            finalHeaders["Authorization"] = `Basic ${encoded}`;
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to configure authentication for background query:", error);
+      }
+
+      // Determine credentials mode - enable if auth is configured or explicitly set
+      const shouldIncludeCredentials = hasAuthConfigured || withCredentials;
 
       // Prepare request
       const searchParams = new URLSearchParams();
@@ -839,8 +857,10 @@ WHERE {
         method: method,
         headers: {
           Accept: "text/turtle",
-          ...headers,
+          ...finalHeaders,
         },
+        credentials: shouldIncludeCredentials ? "include" : "same-origin",
+        mode: "cors",
       };
 
       let url = endpoint;
@@ -862,10 +882,6 @@ WHERE {
       const response = await fetch(url, fetchOptions);
       const duration = Date.now() - startTime;
 
-      if (!response.ok) {
-        throw new Error(`Query failed: ${response.statusText}`);
-      }
-
       const result = await response.text();
 
       // Create a query response object similar to what Yasqe produces
@@ -878,6 +894,15 @@ WHERE {
         type: response.type,
         content: result,
       };
+
+      if (!response.ok) {
+        // For HTTP errors (4xx, 5xx), pass the error with status to yasr
+        const error: any = new Error(result || response.statusText);
+        error.status = response.status;
+        error.statusText = response.statusText;
+        error.response = queryResponse;
+        throw error;
+      }
 
       // Set the response in Yasr
       this.yasr.setResponse(queryResponse, duration);
@@ -894,10 +919,26 @@ WHERE {
       console.error("Background query failed:", error);
       if (this.yasr) {
         this.yasr.hideLoading();
-        // Set error response
+        // Set error response with detailed HTTP status if available
+        const errorObj: any = error;
+        let errorText = error instanceof Error ? error.message : String(error);
+
+        // Enhance error message for fetch failures
+        if (
+          error instanceof Error &&
+          !errorObj.status &&
+          (error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))
+        ) {
+          errorText = `${error.message}. The server may have returned an error response (check browser dev tools), but CORS headers are preventing JavaScript from accessing it. Ensure the endpoint returns proper CORS headers even for error responses (Access-Control-Allow-Origin, etc.).`;
+        }
+
         this.yasr.setResponse(
           {
-            error: error instanceof Error ? error.message : "Unknown error",
+            error: {
+              status: errorObj.status,
+              statusText: errorObj.statusText || (error instanceof Error ? error.name : undefined),
+              text: errorText,
+            },
           },
           0,
         );
@@ -1013,11 +1054,21 @@ const safeEndpoint = (endpoint: string): string => {
 
 function getCorsErrorRenderer(tab: Tab) {
   return async (error: Parser.ErrorSummary): Promise<HTMLElement | undefined> => {
+    // Only show CORS/mixed-content warning for actual network failures (no status code)
+    // AND when querying HTTP from HTTPS
     if (!error.status) {
-      // Only show this custom error if
       const shouldReferToHttp =
         new URL(tab.getEndpoint()).protocol === "http:" && window.location.protocol === "https:";
-      if (shouldReferToHttp) {
+
+      // Check if this looks like a network error (not just missing status)
+      const isNetworkError =
+        !error.text ||
+        error.text.indexOf("Request has been terminated") >= 0 ||
+        error.text.indexOf("Failed to fetch") >= 0 ||
+        error.text.indexOf("NetworkError") >= 0 ||
+        error.text.indexOf("Network request failed") >= 0;
+
+      if (shouldReferToHttp && isNetworkError) {
         const errorEl = document.createElement("div");
         const errorSpan = document.createElement("p");
         errorSpan.innerHTML = `You are trying to query an HTTP endpoint (<a href="${safeEndpoint(
@@ -1026,14 +1077,7 @@ function getCorsErrorRenderer(tab: Tab) {
           tab.getEndpoint(),
         )}</a>) from an HTTP<strong>S</strong> website (<a href="${safeEndpoint(window.location.href)}">${safeEndpoint(
           window.location.href,
-        )}</a>).<br>This is not allowed in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>.`;
-        if (tab.yasgui.config.nonSslDomain) {
-          const errorLink = document.createElement("p");
-          errorLink.innerHTML = `As a workaround, you can use the HTTP version of Yasgui instead: <a href="${tab.getShareableLink(
-            tab.yasgui.config.nonSslDomain,
-          )}" target="_blank">${tab.yasgui.config.nonSslDomain}</a>`;
-          errorSpan.appendChild(errorLink);
-        }
+        )}</a>).<br>This can be blocked in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>. See also <a href="https://yasgui-doc.matdata.eu/docs/user-guide#querying-local-endpoints">the YasGUI documentation</a> for possible workarounds.`;
         errorEl.appendChild(errorSpan);
         return errorEl;
       }

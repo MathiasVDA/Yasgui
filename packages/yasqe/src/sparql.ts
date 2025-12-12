@@ -78,15 +78,18 @@ export function getAjaxConfig(
     queryMode == "update" ? "POST" : isFunction(config.method) ? config.method(yasqe) : config.method;
   const headers = isFunction(config.headers) ? config.headers(yasqe) : config.headers;
   // console.log({headers})
-  const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
+  let withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
 
   // Add Authentication headers if configured
   const finalHeaders = { ...headers };
+  let hasAuthConfigured = false;
+
   try {
     // Check for Bearer Token authentication
     const bearerAuth = isFunction(config.bearerAuth) ? config.bearerAuth(yasqe) : config.bearerAuth;
     const trimmedBearerToken = bearerAuth && bearerAuth.token ? bearerAuth.token.trim() : "";
     if (bearerAuth && trimmedBearerToken.length > 0) {
+      hasAuthConfigured = true;
       if (finalHeaders["Authorization"] !== undefined) {
         console.warn(
           "Authorization header already exists in request headers; skipping Bearer Auth header to avoid overwrite.",
@@ -100,11 +103,8 @@ export function getAjaxConfig(
     const apiKeyAuth = isFunction(config.apiKeyAuth) ? config.apiKeyAuth(yasqe) : config.apiKeyAuth;
     const trimmedHeaderName = apiKeyAuth && apiKeyAuth.headerName ? apiKeyAuth.headerName.trim() : "";
     const trimmedApiKey = apiKeyAuth && apiKeyAuth.apiKey ? apiKeyAuth.apiKey.trim() : "";
-    if (
-      apiKeyAuth &&
-      trimmedHeaderName.length > 0 &&
-      trimmedApiKey.length > 0
-    ) {
+    if (apiKeyAuth && trimmedHeaderName.length > 0 && trimmedApiKey.length > 0) {
+      hasAuthConfigured = true;
       if (finalHeaders[trimmedHeaderName] !== undefined) {
         console.warn(
           `Header "${trimmedHeaderName}" already exists in request headers; skipping API Key header to avoid overwrite.`,
@@ -117,6 +117,7 @@ export function getAjaxConfig(
     // Check for Basic Authentication (lowest priority)
     const basicAuth = isFunction(config.basicAuth) ? config.basicAuth(yasqe) : config.basicAuth;
     if (basicAuth && basicAuth.username && basicAuth.password) {
+      hasAuthConfigured = true;
       if (finalHeaders["Authorization"] !== undefined) {
         console.warn(
           "Authorization header already exists in request headers; skipping Basic Auth header to avoid overwrite.",
@@ -130,13 +131,19 @@ export function getAjaxConfig(
     // Continue without authentication if there's an error
   }
 
+  // If authentication is configured and withCredentials wasn't explicitly set, enable it
+  // This ensures credentials are sent with cross-origin requests when auth is needed
+  if (hasAuthConfigured) {
+    withCredentials = true;
+  }
+
   return {
     reqMethod,
     url: endpoint,
     args: getUrlArguments(yasqe, config),
     headers: finalHeaders,
     accept: getAcceptHeader(yasqe, config),
-    withCredentials,
+    withCredentials: withCredentials ?? false,
   };
   /**
    * merge additional request headers
@@ -161,6 +168,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
       },
       credentials: populatedConfig.withCredentials ? "include" : "same-origin",
       signal: abortController.signal,
+      mode: "cors",
     };
     if (fetchOptions?.headers && populatedConfig.reqMethod === "POST") {
       (fetchOptions.headers as Record<string, string>)["Content-Type"] = "application/x-www-form-urlencoded";
@@ -186,9 +194,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
     const request = new Request(populatedConfig.url, fetchOptions);
     yasqe.emit("query", request, abortController);
     const response = await fetch(request);
-    if (!response.ok) {
-      throw new Error((await response.text()) || response.statusText);
-    }
+
     // Await the response content and merge with the `Response` object
     const queryResponse = {
       ok: response.ok,
@@ -198,6 +204,16 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
       type: response.type,
       content: await response.text(),
     };
+
+    if (!response.ok) {
+      // For HTTP errors (4xx, 5xx), create an error but include full response details
+      const error: any = new Error(queryResponse.content || response.statusText);
+      error.status = response.status;
+      error.statusText = response.statusText;
+      error.response = queryResponse;
+      throw error;
+    }
+
     yasqe.emit("queryResponse", queryResponse, Date.now() - queryStart);
     yasqe.emit("queryResults", queryResponse.content, Date.now() - queryStart);
     return queryResponse;
@@ -205,7 +221,17 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
     if (e instanceof Error && e.message === "Aborted") {
       // The query was aborted. We should not do or draw anything
     } else {
-      yasqe.emit("queryResponse", e, Date.now() - queryStart);
+      // Check if this is a network/CORS error from fetch (not an error we threw with status info)
+      if (e instanceof Error && !("status" in e)) {
+        // Enhance the error with additional context for common fetch failures
+        const enhancedError: any = e;
+        if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
+          enhancedError.message = `${e.message}. The server may have returned an error response (check browser dev tools), but CORS headers are preventing JavaScript from accessing it. Ensure the endpoint returns proper CORS headers even for error responses (Access-Control-Allow-Origin, etc.).`;
+        }
+        yasqe.emit("queryResponse", enhancedError, Date.now() - queryStart);
+      } else {
+        yasqe.emit("queryResponse", e, Date.now() - queryStart);
+      }
     }
     yasqe.emit("error", e);
     throw e;
