@@ -772,7 +772,7 @@ WHERE {
 } LIMIT 1000`;
 
     // Execute query in background without changing editor content
-    // Note: void operator is intentional - errors are handled within executeBackgroundQuery
+    // Note: void operator is intentional - errors are handled in the catch block of executeBackgroundQuery
     void this.executeBackgroundQuery(constructQuery);
   };
 

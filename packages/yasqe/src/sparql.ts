@@ -201,15 +201,21 @@ export async function executeQuery(
       }
     };
 
+    // Helper function to determine the query parameter name
+    // SPARQL queries use 'query' parameter, updates use 'update' parameter
+    const getQueryParameterName = (args: RequestArgs): string => {
+      if (args.query !== undefined) {
+        return "query";
+      } else if (args.update !== undefined) {
+        return "update";
+      }
+      // Default to 'query' for standard SPARQL SELECT/CONSTRUCT/DESCRIBE/ASK queries
+      return "query";
+    };
+
     // Use custom query if provided, otherwise use the args from config
     if (options?.customQuery) {
-      // For custom queries, determine the query parameter name
-      const queryArg =
-        populatedConfig.args.query !== undefined
-          ? "query"
-          : populatedConfig.args.update !== undefined
-            ? "update"
-            : "query";
+      const queryArg = getQueryParameterName(populatedConfig.args);
       searchParams.append(queryArg, options.customQuery);
 
       // Add other args except the query/update parameter
