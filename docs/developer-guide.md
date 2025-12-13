@@ -458,9 +458,6 @@ interface Config {
   // Default tab name
   tabName: string;  // default: "Query"
 
-  // CORS proxy URL
-  corsProxy?: string;
-
   // Endpoint catalogue configuration
   endpointCatalogueOptions: EndpointSelectConfig;
 
@@ -494,9 +491,6 @@ interface Config {
 
   // Context menu container element
   contextMenuContainer?: HTMLElement;
-
-  // Non-SSL domain for mixed content
-  nonSslDomain?: string;
 
   // Theme: 'light' or 'dark'
   theme?: 'light' | 'dark';
@@ -901,9 +895,6 @@ interface RequestConfig {
 
   // Adjust query before request
   adjustQueryBeforeRequest?: (query: string) => string;
-
-  // CORS proxy
-  corsProxy?: string;
 
   // Authentication
   basicAuth?: BasicAuthConfig | ((yasqe: Yasqe) => BasicAuthConfig | undefined);
